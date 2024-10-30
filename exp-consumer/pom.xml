@@ -1,0 +1,50 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.jools</groupId>
+        <artifactId>jools-rpc</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+    <artifactId>exp-consumer</artifactId>
+    <name>Archetype - exp-consumer</name>
+    <url>http://maven.apache.org</url>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.jools</groupId>
+            <artifactId>jools-rpc-basic</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.jools</groupId>
+            <artifactId>exp-common</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <!--
+            https://doc.hutool.cn/
+            1.Hutool 是一个 Java 工具包，提供了大量实用的工具类，涵盖了很多方面的功能
+            2.常用功能类别:
+               2.1 字符串操作
+               2.2 日期时间处理
+               2.3 集合操作
+               2.4 文件操作
+               2.5 加密解密
+        -->
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-all</artifactId>
+            <version>5.8.16</version>
+        </dependency>
+        <!--
+        https://projectlombok.org/
+        Lombok 是一个 Java 开发工具，它通过注解的方式来简化 Java 代码的编写
+        -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.30</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+</project>

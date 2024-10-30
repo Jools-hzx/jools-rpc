@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding">
+    <file url="file://$PROJECT_DIR$/exp-common/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/exp-common/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/exp-consumer/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/exp-consumer/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/exp-provider/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/exp-provider/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/jools-rpc-basic/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/jools-rpc-basic/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/resources" charset="UTF-8" />
+  </component>
+</project>
