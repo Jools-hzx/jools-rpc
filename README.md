@@ -20,6 +20,10 @@
 - **Local Service Registry**: `LocalRegistry` manages service registrations using a `Map`, where the key is the service name, and the value is the fully qualified class name.
 - **Provider**: Implements the `UserService` interface to provide services.
 
+## 🖼️ Project Design 
+![Jools-RPC-1 0](https://github.com/user-attachments/assets/972a3402-5edb-4baf-979d-ebc41352fe6a)
+
+
 ## 🛠️ Technology Stack
 
 - **Language**: Java
@@ -60,7 +64,7 @@ jools-rpc/
 
 Before you begin, ensure you have the following installed:
 
-- **JDK 8** or higher
+- **JDK 17** or higher
 - **Maven 3.6+**
 - Internet connection to download Maven dependencies
 
@@ -105,9 +109,18 @@ Before you begin, ensure you have the following installed:
 ### Example Usage
 
 ```java
-UserService userService = BasicConsumerExample.getUserService();
-User user = userService.getUser("123");
-System.out.println("User received from RPC: " + user);
+public class BasicProviderExample {
+
+    public static void main(String[] args) {
+
+        //Registry services
+        LocalRegistry.register("UserService", UserServiceImpl.class);
+
+        //Call services
+        HttpServer vertxServer = new VertxHttpServer();
+        vertxServer.doStart(8888);
+    }
+}
 ```
 
 ## 🔧 How It Works
