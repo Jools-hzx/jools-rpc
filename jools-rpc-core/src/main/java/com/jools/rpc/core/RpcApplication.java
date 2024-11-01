@@ -31,6 +31,7 @@ public class RpcApplication {
      * 默认配置文件 application.properties
      */
     public static void init() {
+
         RpcConfig newRpcConfig;
 
         try {

@@ -2,12 +2,14 @@ package com.jools.rpc.core.utils;
 
 
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.setting.Setting;
 import cn.hutool.setting.dialect.Props;
 import com.jools.rpc.core.config.RpcConfig;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 
+import javax.sound.sampled.Port;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -18,6 +20,51 @@ import java.io.InputStream;
  * @description: 配置类工具类
  */
 public class ConfigUtils {
+
+    /**
+     * 修配默认 .properties 中的配置
+     *
+     * @param config
+     * @param key
+     * @param value
+     */
+    public static void modifyConfig(String config, String key, String value) {
+        modifyConfig(config, "", key, value);
+    }
+
+    /**
+     * 可修改 多环境 .properties 中的配置
+     *
+     * @param config
+     * @param environment
+     * @param key
+     * @param value
+     */
+    public static void modifyConfig(String config, String environment, String key, String value) {
+        if (StrUtil.isBlank(key)) {
+            return;
+        }
+        if (StrUtil.isBlank(value)) {
+            throw new RuntimeException("Empty value for key:" + key);
+        }
+
+        //多环境配置
+        StringBuilder configFileBuilder = new StringBuilder(config);
+        if (StrUtil.isNotBlank(environment)) {
+            configFileBuilder.append("-").append(environment);
+        }
+        String propsPath = configFileBuilder.toString();
+        Props props = new Props(propsPath);
+
+        try {
+            //更新配置
+            props.setProperty(key, value);
+            props.store(propsPath);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+    }
 
     /**
      * 基于 YAML 格式配置文件
@@ -95,6 +142,7 @@ public class ConfigUtils {
         }
         configFileBuilder.append(".properties");
         Props props = new Props(configFileBuilder.toString());
+        props.autoLoad(true);
         return props.toBean(tClass, prefix);
     }
 }
