@@ -1,13 +1,5 @@
 package com.jools.exp.common.service.proxy;
 
-import cn.hutool.http.HttpRequest;
-import cn.hutool.http.HttpResponse;
-import com.jools.exp.common.model.User;
-import com.jools.exp.common.service.UserService;
-import com.jools.joolsrpc.model.RpcRequest;
-import com.jools.joolsrpc.model.RpcResponse;
-import com.jools.joolsrpc.serializer.Serializer;
-import com.jools.joolsrpc.serializer.impl.JdkSerializer;
 
 /**
  * @author Jools He

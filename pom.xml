@@ -12,6 +12,7 @@
         <module>exp-consumer</module>
         <module>exp-provider</module>
         <module>jools-rpc-basic</module>
+        <module>jools-rpc-core</module>
     </modules>
 
 
@@ -24,6 +25,18 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>1.18.20</version>
+        </dependency>
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-all</artifactId>
+            <version>5.8.26</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>RELEASE</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 

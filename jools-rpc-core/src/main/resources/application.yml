@@ -1,0 +1,4 @@
+name: Jools rpc 1
+version: 2.0
+serverHost: localHost
+serverPort: 8888
