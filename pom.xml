@@ -18,6 +18,9 @@
 
     <properties>
         <java.version>17</java.version>
+        <!-- 设置项目的默认编码为 UTF-8 -->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     </properties>
 
     <dependencies>
@@ -52,7 +55,28 @@
                     <target>${java.version}</target>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.2.0</version> <!-- 根据实际情况选择版本 -->
+                <configuration>
+                    <!-- 这里明确指定资源文件的编码规则为 UTF-8 -->
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
         </plugins>
+
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>**/*.properties</include> <!-- 包含所有 properties 文件 -->
+                    <include>**/*.yaml</include> <!-- 包含所有 yaml 文件 -->
+                    <include>**/*.yml</include> <!-- 包含所有 yml 文件 -->
+                </includes>
+                <filtering>false</filtering> <!-- 不要过滤资源，预防特殊字符替换 -->
+            </resource>
+        </resources>
     </build>
 
 

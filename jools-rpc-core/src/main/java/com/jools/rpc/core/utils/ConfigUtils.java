@@ -12,6 +12,7 @@ import org.yaml.snakeyaml.constructor.Constructor;
 import javax.sound.sampled.Port;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 /**
  * @author Jools He
@@ -102,7 +103,7 @@ public class ConfigUtils {
                 .getClassLoader()
                 .getResourceAsStream(name.toString())) {
             if (in == null) {
-                throw new RuntimeException("File: " + name.toString() + "NOT FOUND");
+                throw new RuntimeException("File: " + name.toString() + " NOT FOUND");
             }
 
             //加载 yaml 格式配置
@@ -141,7 +142,7 @@ public class ConfigUtils {
             configFileBuilder.append("-").append(environment);
         }
         configFileBuilder.append(".properties");
-        Props props = new Props(configFileBuilder.toString());
+        Props props = new Props(configFileBuilder.toString(), StandardCharsets.UTF_8);
         props.autoLoad(true);
         return props.toBean(tClass, prefix);
     }
