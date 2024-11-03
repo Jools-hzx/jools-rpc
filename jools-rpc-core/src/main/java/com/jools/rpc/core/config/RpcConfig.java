@@ -37,4 +37,9 @@ public class RpcConfig {
      * 服务器端口
      */
     private String serverPort = "8888";
+
+    /**
+     * 模拟调用
+     */
+    private boolean mock = false;
 }

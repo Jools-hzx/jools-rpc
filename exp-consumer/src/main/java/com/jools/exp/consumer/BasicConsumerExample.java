@@ -17,8 +17,9 @@ public class BasicConsumerExample {
         //静态代理
 //        UserService service = new UserServiceStaticProxy();
 
-        //动态代理
+        //获取 - 动态代理
         UserService service = ServiceProxyFactory.getProxy(UserService.class);
+
         User user = new User();
         user.setName("Jools Wakoo");
 
@@ -29,5 +30,10 @@ public class BasicConsumerExample {
         } else {
             System.out.println("user == NULL !!!");
         }
+
+        //测试 - Mock 服务
+        short shortNum = service.getShortNum();
+        System.out.println(shortNum != 1);
+        System.out.println(shortNum);   //0
     }
 }

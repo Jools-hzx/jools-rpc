@@ -28,5 +28,8 @@ public class ConsumerExampleTest {
         System.out.println(rpc.getVersion());
         System.out.println(rpc.getServerHost());
         System.out.println(rpc.getServerPort());
+
+        //测试开启 Mock
+        System.out.println(rpc.isMock());
     }
 }

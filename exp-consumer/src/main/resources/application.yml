@@ -1,4 +1,5 @@
-name: Jools rpc 1
-version: 2.0
-serverHost: localHost
-serverPort: 8888
+# Temporary shield yaml config
+#name: Jools rpc 1
+#version: 2.0
+#serverHost: localHost
+#serverPort: 8888
