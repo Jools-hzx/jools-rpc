@@ -23,7 +23,7 @@ public class TestSnakeYaml {
     @Test
     public void testParseYamlToCustomizeType() {
 
-        Yaml yaml = new Yaml(new Constructor(RpcConfig.class, new LoaderOptions()));
+        Yaml yaml = new Yaml(new Constructor(RpcConfig.class));
 
         RpcConfig rpcConfig = null;
         try (InputStream in = this.getClass()

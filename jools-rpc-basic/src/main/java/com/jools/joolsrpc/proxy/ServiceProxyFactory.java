@@ -20,7 +20,7 @@ public class ServiceProxyFactory {
      * @return
      */
     @SuppressWarnings("all")
-    public static <T> T getMockProxy(Class<T> mockClass) {
+    private static <T> T getMockProxy(Class<T> mockClass) {
         return (T) Proxy.newProxyInstance(
                 mockClass.getClassLoader(),
                 new Class[]{mockClass},

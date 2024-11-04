@@ -11,6 +11,11 @@
     <url>http://maven.apache.org</url>
 
     <dependencies>
+        <dependency>
+            <groupId>com.github.javafaker</groupId>
+            <artifactId>javafaker</artifactId>
+            <version>1.0.2</version>
+        </dependency>
         <!--        Yaml配置类解析-->
         <dependency>
             <groupId>org.yaml</groupId>

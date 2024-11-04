@@ -97,7 +97,7 @@ public class ConfigUtils {
         name.append(suffix);
 
         //解析类
-        Yaml yaml = new Yaml(new Constructor(tClass, new LoaderOptions()));
+        Yaml yaml = new Yaml(new Constructor(tClass));
 
         try (InputStream in = ConfigUtils.class
                 .getClassLoader()
