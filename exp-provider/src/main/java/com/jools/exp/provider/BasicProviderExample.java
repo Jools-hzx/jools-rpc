@@ -1,12 +1,12 @@
 package com.jools.exp.provider;
 
-import cn.hutool.core.io.watch.WatchUtil;
 import com.jools.joolsrpc.server.HttpServer;
 import com.jools.joolsrpc.server.impl.VertxHttpServer;
 import com.jools.joolsrpc.registry.LocalRegistry;
-import com.jools.rpc.core.RpcApplication;
-import com.jools.rpc.core.config.RpcConfigListener;
-import com.jools.rpc.core.utils.ConfigUtils;
+import com.jools.rpc.RpcApplication;
+import com.jools.rpc.config.RpcConfigListener;
+import com.jools.rpc.serializer.Serializer;
+import com.jools.rpc.serializer.SerializerFactory;
 
 import java.io.FileNotFoundException;
 
@@ -19,10 +19,9 @@ public class BasicProviderExample {
 
     public static void main(String[] args) throws FileNotFoundException {
 
-        //Rpc框架初始化
-        RpcApplication.init(".properties");
-        //监听配置文件变换
-        RpcConfigListener.init();
+        //测试获取 - 配置文件内配置的相应的实现类
+        Serializer instance = SerializerFactory.getInstance(RpcApplication.getRpcConfig().getSerializer());
+        System.out.println(instance.getClass());
 
         /*
             1.0 版本

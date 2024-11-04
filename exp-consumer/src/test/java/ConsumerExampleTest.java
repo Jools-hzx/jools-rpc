@@ -1,5 +1,6 @@
-import com.jools.rpc.core.config.RpcConfig;
-import com.jools.rpc.core.utils.ConfigUtils;
+
+import com.jools.rpc.config.RpcConfig;
+import com.jools.rpc.utils.ConfigUtils;
 import org.junit.Test;
 
 /**

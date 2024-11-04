@@ -2,7 +2,14 @@ package com.jools.exp.consumer;
 
 import com.jools.exp.common.model.User;
 import com.jools.exp.common.service.UserService;
-import com.jools.joolsrpc.proxy.ServiceProxyFactory;
+import com.jools.rpc.RpcApplication;
+import com.jools.rpc.proxy.ServiceProxyFactory;
+import com.jools.rpc.serializer.Serializer;
+import com.jools.rpc.serializer.SerializerFactory;
+import com.jools.rpc.serializer.SerializerKeys;
+import com.jools.rpc.serializer.impl.HessianSerializer;
+import com.jools.rpc.spi.SpiLoader;
+
 
 /**
  * @author Jools He
@@ -20,6 +27,10 @@ public class BasicConsumerExample {
         //获取 - 动态代理
         UserService service = ServiceProxyFactory.getProxy(UserService.class);
 
+        //测试获取 - 配置文件内配置的相应的实现类
+        Serializer instance = SerializerFactory.getInstance(RpcApplication.getRpcConfig().getSerializer());
+        System.out.println(instance.getClass());
+
         User user = new User();
         user.setName("Jools Wakoo");
 
@@ -32,8 +43,8 @@ public class BasicConsumerExample {
         }
 
         //测试 - Mock 服务
-        short shortNum = service.getShortNum();
-        System.out.println(shortNum != 1);
-        System.out.println(shortNum);   //0
+//        short shortNum = service.getShortNum();
+//        System.out.println(shortNum != 1);
+//        System.out.println(shortNum);   //0
     }
 }

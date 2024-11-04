@@ -21,6 +21,8 @@
         <!-- 设置项目的默认编码为 UTF-8 -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
     </properties>
 
     <dependencies>
@@ -43,13 +45,12 @@
         </dependency>
     </dependencies>
 
-
     <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version> <!-- 可根据实际情况选择版本 -->
+                <version>3.10.1</version> <!-- 升级版本 -->
                 <configuration>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
@@ -70,14 +71,11 @@
             <resource>
                 <directory>src/main/resources</directory>
                 <includes>
-                    <include>**/*.properties</include> <!-- 包含所有 properties 文件 -->
-                    <include>**/*.yaml</include> <!-- 包含所有 yaml 文件 -->
-                    <include>**/*.yml</include> <!-- 包含所有 yml 文件 -->
+                    <include>**/*</include> <!-- 包含所有文件 -->
                 </includes>
                 <filtering>false</filtering> <!-- 不要过滤资源，预防特殊字符替换 -->
             </resource>
         </resources>
     </build>
-
 
 </project>

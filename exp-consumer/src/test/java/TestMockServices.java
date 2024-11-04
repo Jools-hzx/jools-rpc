@@ -1,9 +1,10 @@
 import com.jools.exp.common.service.TestMockService;
-import com.jools.joolsrpc.model.RpcRequest;
-import com.jools.joolsrpc.model.RpcResponse;
-import com.jools.joolsrpc.proxy.ServiceProxyFactory;
-import com.jools.joolsrpc.server.HttpServer;
-import com.jools.rpc.core.config.RpcConfig;
+
+import com.jools.rpc.config.RpcConfig;
+import com.jools.rpc.model.RpcRequest;
+import com.jools.rpc.model.RpcResponse;
+import com.jools.rpc.proxy.ServiceProxyFactory;
+import com.jools.rpc.server.HttpServer;
 import org.junit.Test;
 
 /**

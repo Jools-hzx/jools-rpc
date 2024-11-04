@@ -1,0 +1,4 @@
+jdk=com.jools.joolsrpc.serializer.impl.JdkSerializer
+hessian=com.jools.joolsrpc.serializer.impl.HessianSerializer
+json=com.jools.joolsrpc.serializer.impl.JsonSerializer
+kryo=com.jools.joolsrpc.serializer.impl.KryoSerializer
