@@ -68,14 +68,20 @@ public class TestSpiLoader {
         Serializer jdkInstance = SpiLoader.getInstance(Serializer.class, SerializerKeys.JDK);
         Serializer hessianInstance = SpiLoader.getInstance(Serializer.class, SerializerKeys.HESSIAN);
         Serializer jsonInstance = SpiLoader.getInstance(Serializer.class, SerializerKeys.JSON);
+        Serializer protobufInstance = SpiLoader.getInstance(Serializer.class, SerializerKeys.PROTOBUF);
 
         assert hessianInstance != null;
         assert jdkInstance != null;
         assert kryoInstance != null;
         assert jsonInstance != null;
+        assert protobufInstance != null;
 
         //测试单例
         Serializer newJsonInstance = SpiLoader.getInstance(Serializer.class, SerializerKeys.JSON);
         assert newJsonInstance == jsonInstance;
+
+        //测试单例
+        Serializer newProtobufInstance = SpiLoader.getInstance(Serializer.class, SerializerKeys.PROTOBUF);
+        assert newProtobufInstance == protobufInstance;
     }
 }

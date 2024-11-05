@@ -10,7 +10,7 @@ package com.jools.exp.common.service.proxy;
 //public class UserServiceStaticProxy implements UserService {
 //
 //    @Override
-//    public User getUser(User user) {
+//    public com.jools.rpc.protoc.User getUser(com.jools.rpc.protoc.User user) {
 //
 //        //指定序列化器
 //        Serializer serializer = new JdkSerializer();
@@ -19,7 +19,7 @@ package com.jools.exp.common.service.proxy;
 //        RpcRequest rpcRequest = RpcRequest.builder()
 //                .serviceName(UserService.class.getName())
 //                .methodName("getUser")
-//                .paramTypes(new Class[]{User.class})
+//                .paramTypes(new Class[]{com.jools.rpc.protoc.User.class})
 //                .params(new Object[]{user})
 //                .build();
 //
@@ -37,7 +37,7 @@ package com.jools.exp.common.service.proxy;
 //
 //            //反序列化响应结果
 //            RpcResponse rpcResponse = serializer.deserialize(result, RpcResponse.class);
-//            return (User) rpcResponse.getData();
+//            return (com.jools.rpc.protoc.User) rpcResponse.getData();
 //        } catch (Exception e) {
 //            e.printStackTrace();
 //        }
