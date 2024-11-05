@@ -1,6 +1,7 @@
 package com.jools.rpc.serializer;
 
 import com.jools.rpc.spi.SpiLoader;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author Jools He
@@ -9,7 +10,20 @@ import com.jools.rpc.spi.SpiLoader;
  * @description: 序列化器工厂:
  * 基于 工厂模式 + 单例模式 来简化创建和获取序列化器的操作
  */
+@Slf4j
 public class SerializerFactory {
+
+    private SerializerFactory() {
+        log.info("Enter SerializerFactory `private` Constructor");
+    }
+
+    private static class SerializerFactoryHolder {
+        private static final SerializerFactory SERIALIZER_FACTORY = new SerializerFactory();
+    }
+
+    public static SerializerFactory getInstance() {
+        return SerializerFactoryHolder.SERIALIZER_FACTORY;
+    }
 
     /**
      * 序列化映射 - 使用 SPI 机制加载所有资源配置文件；
@@ -18,7 +32,6 @@ public class SerializerFactory {
     static {
         SpiLoader.load(Serializer.class);
     }
-
 
     /**
      * 默认的序列化器 —— 基于 JDK

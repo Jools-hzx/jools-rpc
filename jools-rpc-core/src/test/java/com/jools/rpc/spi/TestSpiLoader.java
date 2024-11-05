@@ -3,6 +3,7 @@ package com.jools.rpc.spi;
 import cn.hutool.core.io.resource.ResourceUtil;
 import com.jools.rpc.serializer.Serializer;
 import com.jools.rpc.serializer.SerializerKeys;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -22,6 +23,13 @@ public class TestSpiLoader {
     @Before
     public void testLoaderLoadAll() {
         SpiLoader.loadAll();
+    }
+
+    @Test
+    public void testSpiLoaderSingleton() {
+        SpiLoader thisInstance = SpiLoader.getSpiLoaderInstance();
+        SpiLoader thatInstance = SpiLoader.getSpiLoaderInstance();
+        Assert.assertEquals(thisInstance, thatInstance);
     }
 
     @Test

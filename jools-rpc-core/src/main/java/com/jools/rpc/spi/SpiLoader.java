@@ -54,6 +54,24 @@ public class SpiLoader {
     private static final String[] SPI_LOAD_DIR = new String[]{SPI_RPC_SYSTEM_DIR, SPI_RPC_CUSTOM_DIR};
 
 
+    private static volatile SpiLoader spiLoaderInstance;
+
+
+    private SpiLoader() {
+        log.info("Enter SpiLoader Class `private` Constructor....");
+    }
+
+    public static SpiLoader getSpiLoaderInstance() {
+        if (spiLoaderInstance == null) {
+            synchronized (SpiLoader.class) {
+                if (spiLoaderInstance == null) {
+                    spiLoaderInstance = new SpiLoader();
+                }
+            }
+        }
+        return spiLoaderInstance;
+    }
+
     /**
      * 基于接口类名和其实现类 key 标识
      * 使用反射返回实例
