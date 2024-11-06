@@ -6,12 +6,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * @author Jools He
- * @version 1.0
- * @date 2024/11/1 11:09
- * @description: Rpc 框架配置类
- */
 
 @Data
 @AllArgsConstructor
@@ -44,5 +38,14 @@ public class RpcConfig {
      */
     private boolean mock = false;
 
+    /**
+     * 序列化器类型
+     */
     private String serializer = SerializerKeys.JDK;
+
+    /**
+     * 注册中心配置
+     */
+    private RegistryConfig registryConfig = new RegistryConfig();
+
 }

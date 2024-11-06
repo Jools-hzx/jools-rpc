@@ -1,5 +1,6 @@
 package com.jools.rpc.model;
 
+import com.jools.rpc.constant.RpcConstant;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -44,4 +45,9 @@ public class RpcRequest implements Serializable {
      * 请求方法的参数列表
      */
     private Object[] params;
+
+    /**
+     * 默认请求的服务版本号
+     */
+    private String serviceVersion = RpcConstant.DEFAULT_SERVICE_VERSION;
 }

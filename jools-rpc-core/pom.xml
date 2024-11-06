@@ -11,6 +11,12 @@
     <url>http://maven.apache.org</url>
 
     <dependencies>
+        <!-- Java - etcd 客户端-->
+        <dependency>
+            <groupId>io.etcd</groupId>
+            <artifactId>jetcd-core</artifactId>
+            <version>0.8.0</version>
+        </dependency>
         <dependency>
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java</artifactId>
