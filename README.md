@@ -3,9 +3,11 @@
 
 ![Static Badge](https://img.shields.io/badge/JoolsRpc-version_1.0-blue)
 ![Static Badge](https://img.shields.io/badge/JDK-17-blue?logo=java)
+![Static Badge](https://img.shields.io/badge/etcd-v3.5.16-blueviole?logo=etcd)
 ![Static Badge](https://img.shields.io/badge/Maven-3.8.1-C71A36?logo=apachemaven)
 ![Static Badge](https://img.shields.io/badge/Vert.x-4.3.3-green?logo=eclipsevert.x)
 ![Static Badge](https://img.shields.io/badge/Hutool-v5.8.10-blueviolet?logo=hu)
+
 
 `JoolsRPC` is a lightweight RPC (Remote Procedure Call) framework implemented in Java, designed to simplify the process of remote service invocation. It provides an easy-to-use structure with a focus on flexibility, extensibility, and simplicity. This framework is ideal for learning purposes or for small-scale applications requiring lightweight RPC capabilities.
 
