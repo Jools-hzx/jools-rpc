@@ -1,10 +1,10 @@
 package com.jools.rpc.config;
 
+import com.jools.rpc.registry.RegistryKeys;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.checkerframework.checker.units.qual.N;
 
 /**
  * @author Jools He
@@ -21,12 +21,12 @@ public class RegistryConfig {
     /**
      * 注册中心配置类别
      */
-    private RegistryType registryType = RegistryType.ETCD;
+    private String registryType = RegistryKeys.ETCD;
 
     /**
      * 注册中心地址
      */
-    private String address = "http://localhost:2380";
+    private String address = "http://localhost:2379";
 
     /**
      * 用户名

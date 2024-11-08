@@ -4,6 +4,7 @@ import com.jools.joolsrpc.model.RpcRequest;
 import com.jools.joolsrpc.model.RpcResponse;
 import com.jools.joolsrpc.registry.LocalRegistry;
 import com.jools.joolsrpc.serializer.Serializer;
+import com.jools.joolsrpc.serializer.SerializerFactory;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerRequest;
@@ -23,7 +24,7 @@ public class HttpServerHandler implements Handler<HttpServerRequest> {
     public void handle(HttpServerRequest request) {
 
         //动态基于 RpcConfig 配置获取序列化器
-//        final Serializer serializer = SerializerFactory.getInstance(RpcApplication.getRpcConfig().getSerializer());
+//        final Serializer serializer = SerializerFactory.getInstance();
 
         //记录日志
         System.out.println("Received request: " + request.method() + " " + request.uri());
@@ -44,9 +45,7 @@ public class HttpServerHandler implements Handler<HttpServerRequest> {
             RpcResponse rpcResponse = new RpcResponse();
 
             //如果请求为 null, 直接返回
-            if (rpcResponse == null) {
-                rpcResponse.setMsg("rpc response is null");
-//                doResponse(request, rpcResponse, serializer);
+            if(request == null) {
                 return;
             }
 

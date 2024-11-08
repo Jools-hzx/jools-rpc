@@ -1,5 +1,6 @@
 package com.jools.rpc.model;
 
+import cn.hutool.core.util.StrUtil;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -43,12 +44,22 @@ public class ServiceMetaInfo {
     private String serviceGroup = "default";
 
     /**
+     * 获取完整服务地址
+     */
+    public String getServiceAddr() {
+        if (!StrUtil.contains(serviceHost, "http")) {
+            return String.format("http://%s:%s", this.serviceHost, this.servicePort);
+        }
+        return String.format("%s:%s", this.serviceHost, this.servicePort);
+    }
+
+    /**
      * 获取服务注册键名 + 服务当前版本
-     *
+     *1
      * @return
      */
     public String getServiceKey() {
-        return String.format("%s:%s:%s", serviceName, serviceVersion);
+        return String.format("%s:%s", serviceName, serviceVersion);
     }
 
     /**
@@ -56,8 +67,8 @@ public class ServiceMetaInfo {
      *
      * @return
      */
-    public String getServiceNode() {
-        return String.format("%s:%s:%s", getServiceKey(), serviceHost, servicePort);
+    public String getServiceNodeKey() {
+        return String.format("%s/%s:%s", getServiceKey(), serviceHost, servicePort);
     }
 }
 

@@ -10,6 +10,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -20,6 +21,7 @@ import java.lang.reflect.Method;
  * @date 2024/10/30 10:36
  * @description: HTTP 请求处理
  */
+@Slf4j
 public class HttpServerHandler implements Handler<HttpServerRequest> {
     @Override
     public void handle(HttpServerRequest request) {
@@ -27,17 +29,18 @@ public class HttpServerHandler implements Handler<HttpServerRequest> {
         //动态基于 RpcConfig 配置获取序列化器
         final Serializer serializer = SerializerFactory.getInstance(RpcApplication.getRpcConfig().getSerializer());
 
-        //记录日志
-        System.out.println("Received request: " + request.method() + " " + request.uri());
-
         //异步处理 HTTP 请求
         request.bodyHandler(body -> {
+            log.info("Receive Remote request, uri:{}, remote address:{}", request.uri(), request.remoteAddress());
             byte[] bytes = body.getBytes();
             RpcRequest rpcRequest = null;
 
             try {
-                //序列化构建请求
+                //反序列化 RpcRequest 请求
                 rpcRequest = serializer.deserialize(bytes, RpcRequest.class);
+                //记录日志
+                log.info("Received RPC-Request -- request service:{}, request method:{}",
+                        rpcRequest.getServiceName(), rpcRequest.getMethodName());
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -46,7 +49,7 @@ public class HttpServerHandler implements Handler<HttpServerRequest> {
             RpcResponse rpcResponse = new RpcResponse();
 
             //如果请求为 null, 直接返回
-            if (rpcResponse == null) {
+            if (rpcRequest == null) {
                 rpcResponse.setMsg("rpc response is null");
                 doResponse(request, rpcResponse, serializer);
                 return;
@@ -55,9 +58,11 @@ public class HttpServerHandler implements Handler<HttpServerRequest> {
             try {
                 //获取调用到的服务实现类
                 Class<?> service = LocalRegistry.getService(rpcRequest.getServiceName());
-
                 //通过反射调用方法，返回方法结果
                 Method declaredMethod = service.getMethod(rpcRequest.getMethodName(), rpcRequest.getParamTypes());
+
+                log.info("Invoke service name:{}, method name:{}", rpcRequest.getServiceName(), rpcRequest.getMethodName());
+
                 Object methodResult = declaredMethod.invoke(
                         //JDK 9 之后不推荐 直接 newInstance()
                         service.getDeclaredConstructor().newInstance(),
@@ -87,6 +92,11 @@ public class HttpServerHandler implements Handler<HttpServerRequest> {
      * @param serializer
      */
     void doResponse(HttpServerRequest request, RpcResponse rpcResponse, Serializer serializer) {
+        log.info(
+                "Enter HttpServer Handler doResponse, rpcResponse message: {}, data type:{}",
+                rpcResponse.getMsg(),
+                rpcResponse.getDataType()
+        );
 
         //定义响应消息头
         HttpServerResponse httpServerResponse = request

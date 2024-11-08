@@ -1,8 +1,11 @@
 package com.jools.rpc;
 
 import cn.hutool.core.util.StrUtil;
+import com.jools.rpc.config.RegistryConfig;
 import com.jools.rpc.config.RpcConfig;
 import com.jools.rpc.constant.RpcConstant;
+import com.jools.rpc.registry.Registry;
+import com.jools.rpc.registry.RegistryFactory;
 import com.jools.rpc.utils.ConfigUtils;
 import lombok.extern.slf4j.Slf4j;
 
@@ -23,6 +26,15 @@ public class RpcApplication {
     public static void init(RpcConfig newConfig) {
         rpcConfig = newConfig;
         log.info("Rpc Config init succeed!, config = {}", newConfig);
+
+        //通过 RpcConfig 获取 RegistryConfig
+        RegistryConfig registryConfig = rpcConfig.getRegistryConfig();
+
+        //通过 RegistryConfig 获取到 RegistryType
+        Registry registry = RegistryFactory.getRegistry(registryConfig.getRegistryType());
+
+        //调用 Registry 的初始化方法，基于 RegistryConfig
+        registry.init(registryConfig);
     }
 
     /**

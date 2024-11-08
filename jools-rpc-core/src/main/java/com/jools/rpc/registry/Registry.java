@@ -37,7 +37,7 @@ public interface Registry {
     /**
      * 列举所有服务
      *
-     * @param serviceKey 服务键
+     * @param serviceKey 服务键值
      * @return 该键值下的所有服务
      */
     List<ServiceMetaInfo> serviceDiscovery(String serviceKey);

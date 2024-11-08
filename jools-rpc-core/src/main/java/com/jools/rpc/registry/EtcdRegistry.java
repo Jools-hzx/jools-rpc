@@ -2,12 +2,12 @@ package com.jools.rpc.registry;
 
 import cn.hutool.json.JSONUtil;
 import com.jools.rpc.config.RegistryConfig;
-import com.jools.rpc.config.RegistryType;
 import com.jools.rpc.model.ServiceMetaInfo;
 import io.etcd.jetcd.*;
 import io.etcd.jetcd.kv.GetResponse;
 import io.etcd.jetcd.options.GetOption;
 import io.etcd.jetcd.options.PutOption;
+import lombok.extern.slf4j.Slf4j;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
  * @date 2024/11/6 14:22
  * @description: TODO
  */
+@Slf4j
 public class EtcdRegistry implements Registry {
 
     /**
@@ -90,10 +91,10 @@ public class EtcdRegistry implements Registry {
 
         try {
             //30s 租约
-            leaseId = leaseClient.grant(30).get().getID();
+            leaseId = leaseClient.grant(300).get().getID();
 
-            //设置要存储的键值对: /rpc/ + ServiceKey(服务名 + 版本号)
-            registryKey = ETCD_ROOT_PATH + serviceMetaInfo.getServiceKey();
+            //设置要存储的服务键值: /rpc/ + ServiceNode(服务名:版本号/IP:Port)
+            registryKey = ETCD_ROOT_PATH + serviceMetaInfo.getServiceNodeKey();
             key = ByteSequence.from(registryKey, StandardCharsets.UTF_8);
             value = ByteSequence.from(JSONUtil.toJsonStr(serviceMetaInfo), StandardCharsets.UTF_8);
 
@@ -104,7 +105,8 @@ public class EtcdRegistry implements Registry {
                     .build();
 
             //执行 put 操作
-            kvClient.put(key, value, putOption);
+            kvClient.put(key, value, putOption).get();
+            log.info("Register Service Node key:{}", serviceMetaInfo.getServiceNodeKey());
         } catch (Exception e) {
             e.printStackTrace();
             return false;
@@ -118,7 +120,7 @@ public class EtcdRegistry implements Registry {
         //删除 - 基于 ServiceNode (service name + service version + host address + port)
         try {
             this.kvClient.delete(ByteSequence.from(
-                    ETCD_ROOT_PATH + serviceMetaInfo.getServiceNode(),
+                    ETCD_ROOT_PATH + serviceMetaInfo.getServiceNodeKey(),
                     StandardCharsets.UTF_8));
         } catch (Exception e) {
             e.printStackTrace();
@@ -140,7 +142,8 @@ public class EtcdRegistry implements Registry {
             ).get().getKvs();
 
             //解析服务名称
-            return keyValueList.stream()
+            return keyValueList
+                    .stream()
                     .map((kv) -> {
                         //映射成 ServiceMetaInfo 对象
                         String value = kv.getValue().toString(StandardCharsets.UTF_8);
