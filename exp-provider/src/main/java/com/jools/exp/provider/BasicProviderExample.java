@@ -12,6 +12,7 @@ import com.jools.rpc.serializer.Serializer;
 import com.jools.rpc.serializer.SerializerFactory;
 import com.jools.rpc.server.HttpServer;
 import com.jools.rpc.server.impl.VertxHttpServer;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.FileNotFoundException;
 import java.util.concurrent.ExecutionException;
@@ -21,35 +22,38 @@ import java.util.concurrent.ExecutionException;
  * @version 1.0
  * @description: 简易服务提供者示例
  */
+@Slf4j
 public class BasicProviderExample {
 
     public static void main(String[] args) throws FileNotFoundException, ExecutionException, InterruptedException {
         // RPC 框架初始化
         RpcApplication.init();
 
-        //获取序列化器 - 基于配置文件，默认为 JdkSerializer
+        //获取序列化器 - 配置项 serializer 默认 JdkSerializer
         Serializer instance = SerializerFactory.getInstance(RpcApplication.getRpcConfig().getSerializer());
-        System.out.println(instance.getClass());
+        log.info("Provider Serializer type:{}", instance.getClass());
 
 
         //待请求的服务名称
         String serviceName = UserService.class.getName();
 
         /*
-        1.0 版本
-        注册服务
+            1.0 版本 - 直接 call 本地服务注册中心
         */
         LocalRegistry.register(serviceName, UserServiceImpl.class);
 
-
-        //基于RpcConfig -> RegistryConfig -> 获取到注册中心类型
+        /*
+         版本 2.0 - 注册服务到注册中心
+         获取注册中心信息 - 配置项 registry.registryType 默认 Etcd
+         基于RpcConfig -> RegistryConfig -> 获取到注册中心类型
+         */
         RpcConfig rpcConfig = RpcApplication.getRpcConfig();
         RegistryConfig registryConfig = rpcConfig.getRegistryConfig();
         String registryType = registryConfig.getRegistryType();
 
-        //获取注册中心实例 -> 客户端
+        //获取注册中心客户端
         Registry registry = RegistryFactory.getRegistry(registryType);
-
+        log.info("Provider registry type:{}", registryType);
 
         //构建 ServiceMetaInfo 将服务注册到中心
         ServiceMetaInfo serviceMetaInfo = new ServiceMetaInfo();

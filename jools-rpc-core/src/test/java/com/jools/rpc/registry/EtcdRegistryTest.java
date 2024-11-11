@@ -27,16 +27,16 @@ public class EtcdRegistryTest {
         RegistryConfig registryConfig = new RegistryConfig();
         registryConfig.setAddress("http://localhost:2379");
 
-        /*
-            启动
-            基于 [配置中ip + 端口 + 过期时间创建 client]
-
-            this.client = Client.builder()
-                    .endpoints(registryConfig.getAddress())
-                    .connectTimeout(Duration.ofMillis(registryConfig.getTimeout()))
-                    .build();
-         */
         registry.init(registryConfig);
+    }
+
+
+    @Test
+    public void testHeartBeat() throws InterruptedException, ExecutionException {
+        registry();
+        // init 方法中已经执行心跳检测
+        //暂定 60s 则服务续期失败
+        Thread.sleep(60 * 1000L);
     }
 
     @Test

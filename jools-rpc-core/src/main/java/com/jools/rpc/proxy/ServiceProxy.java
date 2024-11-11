@@ -51,8 +51,10 @@ public class ServiceProxy implements InvocationHandler {
             byte[] bytes = serializer.serialize(rpcRequest);
             byte[] result;
 
-            //版本 2.0 - 通过查询注册中心获取服务
-            //获取 RpcConfig -> RegistryConfig -> RegistryType
+            /*
+                版本 2.0 - 通过查询注册中心获取服务
+                获取 RpcConfig -> RegistryConfig -> RegistryType
+             */
             RpcConfig rpcConfig = RpcApplication.getRpcConfig();
             RegistryConfig registryConfig = rpcConfig.getRegistryConfig();
 

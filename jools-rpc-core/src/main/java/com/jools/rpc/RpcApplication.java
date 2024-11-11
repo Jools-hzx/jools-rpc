@@ -20,7 +20,7 @@ import java.io.FileNotFoundException;
 @Slf4j
 public class RpcApplication {
 
-    private static RpcConfig rpcConfig;
+    private static volatile RpcConfig rpcConfig;
 
 
     public static void init(RpcConfig newConfig) {
@@ -30,11 +30,14 @@ public class RpcApplication {
         //通过 RpcConfig 获取 RegistryConfig
         RegistryConfig registryConfig = rpcConfig.getRegistryConfig();
 
-        //通过 RegistryConfig 获取到 RegistryType
+        //通过 RegistryConfig 获取到 RegistryType 实例化 Registry
         Registry registry = RegistryFactory.getRegistry(registryConfig.getRegistryType());
 
-        //调用 Registry 的初始化方法，基于 RegistryConfig
+        //调用 Registry 的初始化加载RegistryConfig
         registry.init(registryConfig);
+
+        //创建并注册 Shutdown Hook, JVM 退出时执行操作
+        Runtime.getRuntime().addShutdownHook(new Thread(registry::destory));
     }
 
     /**

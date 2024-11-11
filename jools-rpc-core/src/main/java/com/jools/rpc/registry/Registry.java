@@ -3,7 +3,9 @@ package com.jools.rpc.registry;
 import com.jools.rpc.config.RegistryConfig;
 import com.jools.rpc.model.ServiceMetaInfo;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -17,6 +19,16 @@ public interface Registry {
      * @param registryConfig 注册中心配置
      */
     void init(RegistryConfig registryConfig);
+
+    /**
+     * 心跳检测
+     */
+    void heartBeat();
+
+    /**
+     * 监听服务
+     */
+    void watch(String serviceKey);
 
     /**
      * 注册服务
