@@ -1,4 +1,4 @@
-package com.jools.rpc.utils;
+package com.jools.rpc.proxy;
 
 import com.github.javafaker.Faker;
 import com.github.javafaker.service.FakeValuesService;
@@ -17,6 +17,12 @@ import java.util.regex.Pattern;
  * @description: TODO
  */
 public class TestJavaFaker {
+
+    @Test
+    public void testMockCustomModel() {
+        Faker faker = Faker.instance();
+
+    }
 
     @Test
     public void testFakerClass() {

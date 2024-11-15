@@ -56,7 +56,7 @@ public class MockServiceProxy implements InvocationHandler {
             }
         }
 
-        //Rpc - Model
+        //RpcRequest/Response - Model
         if (returnType == RpcRequest.class || returnType == RpcResponse.class) {
             return getDefaultRpcReqResp(returnType);
         }
@@ -71,8 +71,9 @@ public class MockServiceProxy implements InvocationHandler {
             return getDefaultHttpServer();
         }
 
+        log.error("Receive unsupported return type:{}", returnType);
         //其他类型
-        return null;
+        throw new RuntimeException("Unsupported return type:" + returnType);
     }
 
     private HttpServer getDefaultHttpServer() {
