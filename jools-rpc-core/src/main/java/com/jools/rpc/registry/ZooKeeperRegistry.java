@@ -18,8 +18,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
@@ -90,20 +88,19 @@ public class ZooKeeperRegistry implements Registry {
     @Override
     public void watch(String serviceNodeKey) {
         String key = ZK_ROOT_PATH + "/" + serviceNodeKey;
+        String serviceKey = key.substring(0, key.lastIndexOf("/"));
         boolean newAdd = watchServiceKeySet.add(key);
         if (newAdd) {
             CuratorCache curatorCache = CuratorCache.build(client, key);
             curatorCache.start();
-            //基于 ServiceKey 实现多服务缓存，要基于 NodeKey 分割得到 ServiceKey
+            //基于 ServiceNodeKey 实现多服务缓存，要基于 NodeKey 分割得到 ServiceKey
             curatorCache.listenable()
                     .addListener(
                             CuratorCacheListener
                                     .builder()
-                                    .forDeletes(childData -> registryServiceCache
-                                            .clear(key.substring(0, key.lastIndexOf("/")))
-                                    ).forChanges((oldNode, newNode) -> registryServiceCache
-                                            .clear(key.substring(0, key.lastIndexOf("/")))
-                                    ).build());
+                                    .forDeletes(childData -> registryServiceCache.clear(serviceKey))
+                                    .forChanges((oldNode, newNode) -> registryServiceCache.clear(serviceKey))
+                                    .build());
         }
     }
 
@@ -155,6 +152,10 @@ public class ZooKeeperRegistry implements Registry {
 
             // 写入服务缓存
             registryServiceCache.writeCache(searchKey, serviceMetaInfoList);
+            for (ServiceMetaInfo serviceMetaInfo : serviceMetaInfoList) {
+                String keyNode = serviceMetaInfo.getServiceNodeKey();
+                watch(keyNode);
+            }
             return serviceMetaInfoList;
         } catch (Exception e) {
             throw new RuntimeException("Fail to query services list", e);

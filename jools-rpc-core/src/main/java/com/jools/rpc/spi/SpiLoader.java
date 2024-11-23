@@ -105,24 +105,25 @@ public class SpiLoader {
             throw new RuntimeException(String.format("Class:{} doesn't have key:{%s} impl instance", name, key));
         }
 
-        //获取到要加载的实现类型
+        //获取要加载的实例类 Class
         Class<?> implClass = keyClassMap.get(key);
-        //从实例缓存中加载指定类型的实例
+        //得到全类名
         String implClassName = implClass.getName();
 
-        //检查缓存
+        //查询缓存返回实例，key 为要加载的实例类全类名
         if (!instanceCache.containsKey(implClassName)) {
             //如果缓存未命中，载入缓存，保证单例
             log.info("Not impl class name:{} load it",
                     implClassName);
             try {
+                //写入缓存: key(全类名) value(实例)
                 instanceCache.put(implClassName, implClass.getDeclaredConstructor().newInstance());
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }
 
-        //缓存命中或者加载入缓存
+        //缓存命中或者加入缓存后返回
         return (T) instanceCache.get(implClassName);
     }
 

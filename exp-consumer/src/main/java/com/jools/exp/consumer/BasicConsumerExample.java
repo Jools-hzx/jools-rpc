@@ -37,7 +37,7 @@ public class BasicConsumerExample {
         log.info("Consumer Serializer type:{}", instance.getClass());
 
         /*
-         版本 2.0 - 支持切换注册中心
+         版本 3.0 - 支持切换注册中心
          */
         RegistryConfig registryConfig = RpcApplication.getRpcConfig().getRegistryConfig();
         String registryType = registryConfig.getRegistryType();

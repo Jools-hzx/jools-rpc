@@ -29,7 +29,9 @@ public class BasicProviderExample {
         // RPC 框架初始化
         RpcApplication.init();
 
-        //获取序列化器 - 配置项 serializer 默认 JdkSerializer
+         /*
+          序列化器版本 2.0 - 支持多种序列化器，基于配置切换; 默认基于 JDK 序列化器
+         */
         Serializer instance = SerializerFactory.getInstance(RpcApplication.getRpcConfig().getSerializer());
         log.info("Provider Serializer type:{}", instance.getClass());
 
@@ -43,7 +45,7 @@ public class BasicProviderExample {
         LocalRegistry.register(serviceName, UserServiceImpl.class);
 
         /*
-         版本 2.0 - 注册服务到注册中心
+         版本 3.0 - 支持切换注册中心 [当前仅注册 UserService 服务]
          获取注册中心信息 - 配置项 registry.registryType 默认 Etcd
          基于RpcConfig -> RegistryConfig -> 获取到注册中心类型
          */

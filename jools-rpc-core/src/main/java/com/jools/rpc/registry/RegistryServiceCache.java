@@ -53,7 +53,7 @@ public class RegistryServiceCache {
     }
 
     /**
-     * 基于 serviceKey 清空缓存
+     * 清空基于 serviceKey 的缓存
      *
      * @param serviceKey
      */

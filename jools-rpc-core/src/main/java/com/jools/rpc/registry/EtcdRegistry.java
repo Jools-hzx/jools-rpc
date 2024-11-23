@@ -28,8 +28,6 @@ import java.util.stream.Collectors;
 /**
  * @author Jools He
  * @version 1.0
- * @date 2024/11/6 14:22
- * @description: TODO
  */
 @Slf4j
 public class EtcdRegistry implements Registry {
@@ -63,6 +61,30 @@ public class EtcdRegistry implements Registry {
      * 注册中心被监听的服务
      */
     private final Set<String> watchServiceKeySet = new ConcurrentHashSet<>();
+
+
+    public static void main(String[] args) throws ExecutionException, InterruptedException {
+        // create client using endpoints
+        Client client = Client.builder()
+                .endpoints("http://localhost:2379")
+                .build();
+
+        KV kvClient = client.getKVClient();
+        ByteSequence key = ByteSequence.from("test_key".getBytes());
+        ByteSequence value = ByteSequence.from("test_value".getBytes());
+
+        // put the key-value
+        kvClient.put(key, value).get();
+
+        // get the CompletableFuture
+        CompletableFuture<GetResponse> getFuture = kvClient.get(key);
+
+        // get the value from CompletableFuture
+        GetResponse response = getFuture.get();
+
+        // delete the key
+        kvClient.delete(key).get();
+    }
 
     @Override
     public void heartBeat() {
@@ -133,29 +155,6 @@ public class EtcdRegistry implements Registry {
                 }
             });
         }
-    }
-
-    public static void main(String[] args) throws ExecutionException, InterruptedException {
-        // create client using endpoints
-        Client client = Client.builder()
-                .endpoints("http://localhost:2379")
-                .build();
-
-        KV kvClient = client.getKVClient();
-        ByteSequence key = ByteSequence.from("test_key".getBytes());
-        ByteSequence value = ByteSequence.from("test_value".getBytes());
-
-        // put the key-value
-        kvClient.put(key, value).get();
-
-        // get the CompletableFuture
-        CompletableFuture<GetResponse> getFuture = kvClient.get(key);
-
-        // get the value from CompletableFuture
-        GetResponse response = getFuture.get();
-
-        // delete the key
-        kvClient.delete(key).get();
     }
 
     @Override

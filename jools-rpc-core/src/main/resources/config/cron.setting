@@ -1,0 +1,4 @@
+# 注释
+[com.jools.rpc.cron]
+Test.run = */1 * * * * *
+Test2.run = */1 * * * * *
