@@ -5,8 +5,6 @@ import com.jools.rpc.spi.SpiLoader;
 /**
  * @author Jools He
  * @version 1.0
- * @date 2024/11/7 20:23
- * @description: TODO
  */
 public class RegistryFactory {
 

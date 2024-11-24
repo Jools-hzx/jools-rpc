@@ -48,7 +48,6 @@ public class RegistryServiceCache {
             return serviceCache.get(serviceKey);
         } catch (Exception e) {
             throw new RuntimeException("Not register services contains service key:" + serviceKey);
-
         }
     }
 
@@ -57,7 +56,7 @@ public class RegistryServiceCache {
      *
      * @param serviceKey
      */
-    void clear(String serviceKey) {
+    public void clear(String serviceKey) {
         try {
             List<ServiceMetaInfo> serviceMetaInfos = this.serviceCache.get(serviceKey);
             serviceMetaInfos.clear();

@@ -2,6 +2,8 @@ package com.jools.rpc.registry;
 
 import com.jools.rpc.config.RegistryConfig;
 import com.jools.rpc.model.ServiceMetaInfo;
+import com.jools.rpc.registry.strategy.WatchStrategy;
+import com.jools.rpc.registry.strategy.ZooKeeperStrategy;
 import io.vertx.core.impl.ConcurrentHashSet;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.curator.framework.CuratorFramework;
@@ -53,7 +55,9 @@ public class ZooKeeperRegistry implements Registry {
     /**
      * 根节点
      */
-    private static final String ZK_ROOT_PATH = "/rpc/zk";
+    public static final String ZK_ROOT_PATH = "/rpc/zk";
+
+    private WatchStrategy watchStrategy;
 
     @Override
     public void init(RegistryConfig registryConfig) {
@@ -79,6 +83,12 @@ public class ZooKeeperRegistry implements Registry {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+
+        this.watchStrategy = new ZooKeeperStrategy();
+        ((ZooKeeperStrategy)watchStrategy).setClient(this.client);
+        ((ZooKeeperStrategy)watchStrategy).setRegistryServiceCache(this.registryServiceCache);
+        ((ZooKeeperStrategy)watchStrategy).setWatchServiceKeySet(this.watchServiceKeySet);
+
     }
 
     @Override
@@ -88,21 +98,10 @@ public class ZooKeeperRegistry implements Registry {
 
     @Override
     public void watch(String serviceNodeKey) {
-        String key = ZK_ROOT_PATH + "/" + serviceNodeKey;
-        String serviceKey = key.substring(0, key.lastIndexOf("/"));
-        boolean newAdd = watchServiceKeySet.add(key);
-        if (newAdd) {
-            CuratorCache curatorCache = CuratorCache.build(client, key);
-            curatorCache.start();
-            //基于 ServiceNodeKey 实现多服务缓存，要基于 NodeKey 分割得到 ServiceKey
-            curatorCache.listenable()
-                    .addListener(
-                            CuratorCacheListener
-                                    .builder()
-                                    .forDeletes(childData -> registryServiceCache.clear(serviceKey))
-                                    .forChanges((oldNode, newNode) -> registryServiceCache.clear(serviceKey))
-                                    .build());
-        }
+        log.info("Start watching service node key:{}, using strategy:{}",
+                serviceNodeKey,
+                watchStrategy.getClass().getSimpleName());
+        watchStrategy.watch(serviceNodeKey);
     }
 
     @Override

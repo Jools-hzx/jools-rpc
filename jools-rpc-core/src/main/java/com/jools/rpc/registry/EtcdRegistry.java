@@ -6,6 +6,8 @@ import cn.hutool.cron.task.Task;
 import cn.hutool.json.JSONUtil;
 import com.jools.rpc.config.RegistryConfig;
 import com.jools.rpc.model.ServiceMetaInfo;
+import com.jools.rpc.registry.strategy.EtcdWatchStrategy;
+import com.jools.rpc.registry.strategy.WatchStrategy;
 import io.etcd.jetcd.*;
 import io.etcd.jetcd.kv.GetResponse;
 import io.etcd.jetcd.options.DeleteOption;
@@ -62,6 +64,29 @@ public class EtcdRegistry implements Registry {
      * 注册中心被监听的服务
      */
     private final Set<String> watchServiceKeySet = new ConcurrentHashSet<>();
+
+    private WatchStrategy watchStrategy;
+
+    @Override
+    public void init(RegistryConfig registryConfig) {
+        //基于配置中ip+端口+过期时间创建 client
+        this.client = Client.builder()
+                .endpoints(registryConfig.getAddress())
+                .connectTimeout(Duration.ofMillis(registryConfig.getTimeout()))
+                .build();
+
+        //创建 kv 客户端
+        this.kvClient = this.client.getKVClient();
+
+        //启动心跳检测机制
+        this.heartBeat();
+
+        //监听机制
+        this.watchStrategy = new EtcdWatchStrategy(this.client.getWatchClient());
+        ((EtcdWatchStrategy) watchStrategy).setWatchClient(client.getWatchClient());
+        ((EtcdWatchStrategy) watchStrategy).setRegistryServiceCache(this.registryServiceCache);
+        ((EtcdWatchStrategy) watchStrategy).setWatchServiceKeySet(this.watchServiceKeySet);
+    }
 
 
     public static void main(String[] args) throws ExecutionException, InterruptedException {
@@ -137,40 +162,10 @@ public class EtcdRegistry implements Registry {
 
     @Override
     public void watch(String serviceNodeKey) {
-        Watch watchClient = client.getWatchClient();
-        //之前未被监听，开启监听
-        boolean watched = watchServiceKeySet.add(serviceNodeKey);
-        if (watched) {
-            watchClient.watch(ByteSequence.from(serviceNodeKey, StandardCharsets.UTF_8), response -> {
-                for (WatchEvent event : response.getEvents()) {
-                    switch (event.getEventType()) {
-                        // key 删除时触发
-                        case DELETE:
-                            // 清理注册服务缓存
-                            registryServiceCache.clear(serviceNodeKey.substring(0, serviceNodeKey.lastIndexOf("/")));
-                            break;
-                        case PUT:
-                        default:
-                            break;
-                    }
-                }
-            });
-        }
-    }
-
-    @Override
-    public void init(RegistryConfig registryConfig) {
-        //基于配置中ip+端口+过期时间创建 client
-        this.client = Client.builder()
-                .endpoints(registryConfig.getAddress())
-                .connectTimeout(Duration.ofMillis(registryConfig.getTimeout()))
-                .build();
-
-        //创建 kv 客户端
-        this.kvClient = this.client.getKVClient();
-
-        //启动心跳检测机制
-        this.heartBeat();
+        log.info("Start watching service node key:{}, using strategy:{}",
+                serviceNodeKey,
+                watchStrategy.getClass().getSimpleName());
+        watchStrategy.watch(serviceNodeKey);
     }
 
     @Override
