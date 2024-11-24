@@ -1,2 +1,3 @@
 etcd=com.jools.rpc.registry.EtcdRegistry
 zookeeper=com.jools.rpc.registry.ZooKeeperRegistry
+redis=com.jools.rpc.registry.RedisRegistry

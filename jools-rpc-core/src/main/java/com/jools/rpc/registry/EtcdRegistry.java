@@ -1,6 +1,7 @@
 package com.jools.rpc.registry;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.cron.CronUtil;
 import cn.hutool.cron.task.Task;
 import cn.hutool.json.JSONUtil;
@@ -67,6 +68,12 @@ public class EtcdRegistry implements Registry {
 
     private WatchStrategy watchStrategy;
 
+    private boolean isHeartBeatScheduled = false;
+
+    public void setWatchStrategy(WatchStrategy watchStrategy) {
+        this.watchStrategy = watchStrategy;
+    }
+
     @Override
     public void init(RegistryConfig registryConfig) {
         //基于配置中ip+端口+过期时间创建 client
@@ -81,11 +88,13 @@ public class EtcdRegistry implements Registry {
         //启动心跳检测机制
         this.heartBeat();
 
-        //监听机制
-        this.watchStrategy = new EtcdWatchStrategy(this.client.getWatchClient());
-        ((EtcdWatchStrategy) watchStrategy).setWatchClient(client.getWatchClient());
-        ((EtcdWatchStrategy) watchStrategy).setRegistryServiceCache(this.registryServiceCache);
-        ((EtcdWatchStrategy) watchStrategy).setWatchServiceKeySet(this.watchServiceKeySet);
+        //设置监听策略 - Etcd
+        if (ObjectUtil.isNull(watchStrategy)) {
+            setWatchStrategy(new EtcdWatchStrategy(this.client.getWatchClient()));
+            ((EtcdWatchStrategy) watchStrategy).setWatchClient(client.getWatchClient());
+            ((EtcdWatchStrategy) watchStrategy).setRegistryServiceCache(this.registryServiceCache);
+            ((EtcdWatchStrategy) watchStrategy).setWatchServiceKeySet(this.watchServiceKeySet);
+        }
     }
 
 
@@ -114,6 +123,10 @@ public class EtcdRegistry implements Registry {
 
     @Override
     public void heartBeat() {
+        if (isHeartBeatScheduled) {
+            log.warn("HeartBeat task is already scheduled.");
+            return;
+        }
 
         //10s 续签一次
         CronUtil.schedule("*/10 * * * * *", new Task() {
@@ -218,9 +231,9 @@ public class EtcdRegistry implements Registry {
                     ETCD_ROOT_PATH + serviceMetaInfo,
                     StandardCharsets.UTF_8));
             //删除存储在本地服务的节点 key
-            this.localRegisterNodeKeySet.remove(serviceNodeKey);
+            this.localRegisterNodeKeySet.remove(ETCD_ROOT_PATH + serviceNodeKey);
             //更新缓存
-            this.registryServiceCache.clear(serviceMetaInfo.getServiceKey());
+            this.registryServiceCache.clear(ETCD_ROOT_PATH + serviceMetaInfo.getServiceKey());
         } catch (Exception e) {
             e.printStackTrace();
             return false;
@@ -279,10 +292,14 @@ public class EtcdRegistry implements Registry {
             try {
                 this.kvClient.delete(ByteSequence.from(nodeKey, StandardCharsets.UTF_8));
                 log.info("Service key node" + nodeKey + " has been destoryed;");
+                this.registryServiceCache.clear(nodeKey);
             } catch (Exception e) {
                 throw new RuntimeException("Service key node: " + nodeKey + " destroy fail!");
             }
         }
+
+        this.localRegisterNodeKeySet.clear();
+        watchServiceKeySet.clear();
 
         if (this.kvClient != null) {
             this.kvClient.close();
@@ -290,5 +307,8 @@ public class EtcdRegistry implements Registry {
         if (this.client != null) {
             this.client.close();
         }
+
+        //停止心跳检测
+        CronUtil.stop();
     }
 }

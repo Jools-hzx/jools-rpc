@@ -58,6 +58,10 @@ public class RegistryServiceCache {
      */
     public void clear(String serviceKey) {
         try {
+            //防止空缓存
+            if (!this.serviceCache.containsKey(serviceKey)) {
+                return;
+            }
             List<ServiceMetaInfo> serviceMetaInfos = this.serviceCache.get(serviceKey);
             serviceMetaInfos.clear();
             log.info("ServiceKey:{} local registered services list is clear", serviceKey);

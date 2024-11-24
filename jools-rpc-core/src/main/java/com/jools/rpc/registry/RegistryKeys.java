@@ -7,4 +7,6 @@ public interface RegistryKeys {
 
     String ETCD = "etcd";
     String ZOO_KEEPER = "zookeeper";
+
+    String REDIS = "redis";
 }

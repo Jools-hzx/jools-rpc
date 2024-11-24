@@ -1,5 +1,6 @@
 package com.jools.rpc.registry;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.jools.rpc.config.RegistryConfig;
 import com.jools.rpc.model.ServiceMetaInfo;
 import com.jools.rpc.registry.strategy.WatchStrategy;
@@ -8,15 +9,13 @@ import io.vertx.core.impl.ConcurrentHashSet;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
-import org.apache.curator.framework.recipes.cache.CuratorCache;
-import org.apache.curator.framework.recipes.cache.CuratorCacheListener;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.curator.x.discovery.ServiceDiscovery;
 import org.apache.curator.x.discovery.ServiceDiscoveryBuilder;
 import org.apache.curator.x.discovery.ServiceInstance;
 import org.apache.curator.x.discovery.details.JsonInstanceSerializer;
 
-import java.time.LocalDateTime;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -59,6 +58,10 @@ public class ZooKeeperRegistry implements Registry {
 
     private WatchStrategy watchStrategy;
 
+    public void setWatchStrategy(WatchStrategy watchStrategy) {
+        this.watchStrategy = watchStrategy;
+    }
+
     @Override
     public void init(RegistryConfig registryConfig) {
         //构建 client
@@ -84,11 +87,13 @@ public class ZooKeeperRegistry implements Registry {
             throw new RuntimeException(e);
         }
 
-        this.watchStrategy = new ZooKeeperStrategy();
-        ((ZooKeeperStrategy)watchStrategy).setClient(this.client);
-        ((ZooKeeperStrategy)watchStrategy).setRegistryServiceCache(this.registryServiceCache);
-        ((ZooKeeperStrategy)watchStrategy).setWatchServiceKeySet(this.watchServiceKeySet);
-
+        //设置监听机制
+        if (ObjectUtil.isNull(watchStrategy)) {
+            setWatchStrategy(new ZooKeeperStrategy());
+            ((ZooKeeperStrategy) watchStrategy).setClient(this.client);
+            ((ZooKeeperStrategy) watchStrategy).setRegistryServiceCache(this.registryServiceCache);
+            ((ZooKeeperStrategy) watchStrategy).setWatchServiceKeySet(this.watchServiceKeySet);
+        }
     }
 
     @Override
@@ -98,6 +103,10 @@ public class ZooKeeperRegistry implements Registry {
 
     @Override
     public void watch(String serviceNodeKey) {
+        if (!watchServiceKeySet.add(serviceNodeKey)) {
+            log.info("Service node key {} is already being watched.", serviceNodeKey);
+            return;
+        }
         log.info("Start watching service node key:{}, using strategy:{}",
                 serviceNodeKey,
                 watchStrategy.getClass().getSimpleName());
@@ -169,9 +178,24 @@ public class ZooKeeperRegistry implements Registry {
         for (String key : localRegisterNodeKeySet) {
             try {
                 client.delete().guaranteed().forPath(key);
+                registryServiceCache.clear(key);
             } catch (Exception e) {
-                throw new RuntimeException("Destroy Service Node Key:" + key + e);
+                log.error("Fail to destroy ZooKeeper Client");
+                throw new RuntimeException("Service key node: " + key + " destroy fail!");
             }
+        }
+        this.localRegisterNodeKeySet.clear();
+        this.watchServiceKeySet.clear();
+        if (serviceDiscovery != null) {
+            try {
+                serviceDiscovery.close();
+            } catch (IOException e) {
+                log.error("Fail to close ZooKeeper ServiceDiscovery");
+                throw new RuntimeException(e);
+            }
+        }
+        if (client != null) {
+            client.close();
         }
     }
 

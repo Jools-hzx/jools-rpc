@@ -14,7 +14,7 @@ import java.util.Set;
  * @date 2024/11/24 13:21
  * @description: TODO
  */
-public class EtcdWatchStrategy implements WatchStrategy{
+public class EtcdWatchStrategy implements WatchStrategy {
 
     private Watch watchClient;
     private Set<String> watchServiceKeySet;
