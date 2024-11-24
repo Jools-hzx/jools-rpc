@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -189,7 +190,8 @@ public class EtcdRegistry implements Registry {
         try {
             //30s 租约
             leaseId = leaseClient.grant(30).get().getID();
-
+            //记录注册时间
+            setRegistryTimeDate(serviceMetaInfo);
             //设置要存储的服务键值: /rpc/ + ServiceNode(服务名:版本号/IP:Port)
             registryKey = ETCD_ROOT_PATH + serviceMetaInfo.getServiceNodeKey();
             key = ByteSequence.from(registryKey, StandardCharsets.UTF_8);
@@ -200,18 +202,15 @@ public class EtcdRegistry implements Registry {
                     .builder()
                     .withLeaseId(leaseId)
                     .build();
-
             //执行 put 操作
             kvClient.put(key, value, putOption).get();
             log.info("Register Service Node key:{}", serviceMetaInfo.getServiceNodeKey());
-
             //存储该服务节点key
             this.localRegisterNodeKeySet.add(registryKey);
         } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
-
         return true;
     }
 

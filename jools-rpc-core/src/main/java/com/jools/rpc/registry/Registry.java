@@ -2,7 +2,9 @@ package com.jools.rpc.registry;
 
 import com.jools.rpc.config.RegistryConfig;
 import com.jools.rpc.model.ServiceMetaInfo;
+import com.jools.rpc.utils.DateUtils;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -56,4 +58,14 @@ public interface Registry {
      * 销毁服务
      */
     void destory();
+
+
+    /**
+     * 设置服务注册时间
+     *
+     * @param serviceMetaInfo
+     */
+    default void setRegistryTimeDate(ServiceMetaInfo serviceMetaInfo) {
+        serviceMetaInfo.setRegisterTime(DateUtils.formatLocalTimeDate(LocalDateTime.now()));
+    }
 }

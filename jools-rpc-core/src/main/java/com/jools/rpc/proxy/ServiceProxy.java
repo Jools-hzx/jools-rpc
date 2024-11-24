@@ -1,5 +1,7 @@
 package com.jools.rpc.proxy;
 
+import cn.hutool.core.map.MapUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
 import com.jools.rpc.RpcApplication;
@@ -9,6 +11,9 @@ import com.jools.rpc.constant.RpcConstant;
 import com.jools.rpc.model.RpcRequest;
 import com.jools.rpc.model.RpcResponse;
 import com.jools.rpc.model.ServiceMetaInfo;
+import com.jools.rpc.model.registryInfo.Protocol;
+import com.jools.rpc.proxy.sender.RequestSender;
+import com.jools.rpc.proxy.sender.RequestSenderFactory;
 import com.jools.rpc.registry.Registry;
 import com.jools.rpc.registry.RegistryFactory;
 import com.jools.rpc.serializer.Serializer;
@@ -18,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Jools He
@@ -74,14 +80,21 @@ public class ServiceProxy implements InvocationHandler {
             //默认: 当前仅使用第一个服务节点
             ServiceMetaInfo registeredService01 = serviceMetaInfos.get(0);
 
-            //通过获取到的服务节点，将请求发送到该服务节点的 ServiceAddr (ip + port)
-            try (HttpResponse httpResponse = HttpRequest
-                    .post(registeredService01.getServiceAddr())
-                    .body(bytes)
-                    .execute()) {
-                //获取响应结果
-                result = httpResponse.bodyBytes();
+            //校验
+            Map<String, String> metadata = serviceMetaInfo.getMetadata();
+            if (metadata != null && metadata.isEmpty()) {
+                //TODO: Handle MetaServiceInfo if exist
             }
+
+            String protocol = serviceMetaInfo.getProtocol();
+
+            if (!StrUtil.isBlank(protocol)) {
+                log.info("Current request protocol is: {}", protocol);
+            }
+
+            //通过获取到的服务节点，将请求发送到该服务节点的 ServiceAddr (ip + port)
+            RequestSender sender = RequestSenderFactory.getSender(protocol);
+            result = sender.convertAndSend(registeredService01.getServiceAddr(), bytes);
 
             //反序列化响应结果
             rpcResponse = serializer.deserialize(result, RpcResponse.class);
@@ -89,7 +102,6 @@ public class ServiceProxy implements InvocationHandler {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
         return null;
     }
 }

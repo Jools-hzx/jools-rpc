@@ -14,6 +14,7 @@ import org.apache.curator.x.discovery.ServiceDiscoveryBuilder;
 import org.apache.curator.x.discovery.ServiceInstance;
 import org.apache.curator.x.discovery.details.JsonInstanceSerializer;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -110,6 +111,8 @@ public class ZooKeeperRegistry implements Registry {
         String serviceNodeKey = serviceMetaInfo.getServiceNodeKey();
         String localRegisterNodeKey = ZK_ROOT_PATH + "/" + serviceNodeKey;
         try {
+            //记录注册时间
+            setRegistryTimeDate(serviceMetaInfo);
             serviceDiscovery.registerService(createServiceInstance(serviceMetaInfo));
         } catch (Exception e) {
             log.error("Fail to register serviceNode Key:{}", localRegisterNodeKey);

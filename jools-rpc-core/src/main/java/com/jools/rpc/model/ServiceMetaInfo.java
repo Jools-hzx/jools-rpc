@@ -1,10 +1,14 @@
 package com.jools.rpc.model;
 
 import cn.hutool.core.util.StrUtil;
+import com.jools.rpc.model.registryInfo.Protocol;
+import com.jools.rpc.model.registryInfo.ServiceWeight;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.Map;
 
 /**
  * @author Jools He
@@ -42,6 +46,32 @@ public class ServiceMetaInfo {
      * 服务分组(默认 default)
      */
     private String serviceGroup = "default";
+
+    /**
+     * 节点注册时间
+     */
+    private String registerTime = "";
+
+    /**
+     * 节点启动时间
+     */
+    private String startTime = "";
+
+    /**
+     * 通信协议，默认 HTTP
+     */
+    private String protocol = Protocol.HTTP;
+
+    /**
+     * 服务权重，默认 0
+     */
+    private String serviceWeight = ServiceWeight.ZERO;
+
+    /**
+     * 自定义元数据
+     * 允许用户附加额外的服务信息，便于扩展。
+     */
+    private Map<String, String> metadata;
 
     /**
      * 获取完整服务地址

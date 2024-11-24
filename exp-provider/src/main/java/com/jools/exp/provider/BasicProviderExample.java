@@ -5,6 +5,8 @@ import com.jools.rpc.RpcApplication;
 import com.jools.rpc.config.RegistryConfig;
 import com.jools.rpc.config.RpcConfig;
 import com.jools.rpc.model.ServiceMetaInfo;
+import com.jools.rpc.model.registryInfo.Protocol;
+import com.jools.rpc.model.registryInfo.ServiceWeight;
 import com.jools.rpc.registry.LocalRegistry;
 import com.jools.rpc.registry.Registry;
 import com.jools.rpc.registry.RegistryFactory;
@@ -12,9 +14,13 @@ import com.jools.rpc.serializer.Serializer;
 import com.jools.rpc.serializer.SerializerFactory;
 import com.jools.rpc.server.HttpServer;
 import com.jools.rpc.server.impl.VertxHttpServer;
+import com.jools.rpc.utils.DateUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.FileNotFoundException;
+import java.time.LocalDateTime;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -65,6 +71,13 @@ public class BasicProviderExample {
         //ip + port 为 Rpc服务配置类内配置
         serviceMetaInfo.setServiceHost(rpcConfig.getServerHost());
         serviceMetaInfo.setServicePort(Integer.valueOf(rpcConfig.getServerPort()));
+
+        //填充其他字段
+//        serviceMetaInfo.setRegisterTime(""); //TODO: move to register method
+        serviceMetaInfo.setServiceWeight(ServiceWeight.ZERO);   //默认 0
+        serviceMetaInfo.setStartTime(DateUtils.formatLocalTimeDate(LocalDateTime.now()));
+        serviceMetaInfo.setProtocol(Protocol.HTTP);
+        serviceMetaInfo.setMetadata(new HashMap<>());
 
         //完成注册 - 默认为:
         //serviceKey 为 com.jools.exp.common.service.UserService:1.0
