@@ -14,11 +14,14 @@ public class HttpRequestSender implements RequestSender {
 
     @Override
     public byte[] convertAndSend(String serviceAddr, byte[] bytes) {
-        log.info(this.getClass().getSimpleName() + "send request to registry");
-        HttpResponse httpResponse = HttpRequest
+        try (HttpResponse httpResponse = HttpRequest
                 .post(serviceAddr)
                 .body(bytes)
-                .execute();
-        return httpResponse.bodyBytes();
+                .execute()) {
+            return httpResponse.bodyBytes();
+        } catch (Exception e) {
+            log.error("HttpRequestSender - convertAndSend - fail to send and get response:{}", e.getMessage());
+            return new byte[]{};
+        }
     }
 }

@@ -51,7 +51,7 @@ public class BasicProviderExample {
         LocalRegistry.register(serviceName, UserServiceImpl.class);
 
         /*
-         版本 3.0 - 支持切换注册中心 [当前仅注册 UserService 服务]
+         版本 3.0 - 支持切换注册中心 Etcd + ZooKeeper + Redis [当前仅注册 UserService 服务]
          获取注册中心信息 - 配置项 registry.registryType 默认 Etcd
          基于RpcConfig -> RegistryConfig -> 获取到注册中心类型
          */
@@ -72,8 +72,8 @@ public class BasicProviderExample {
         serviceMetaInfo.setServiceHost(rpcConfig.getServerHost());
         serviceMetaInfo.setServicePort(Integer.valueOf(rpcConfig.getServerPort()));
 
-        //填充其他字段
-//        serviceMetaInfo.setRegisterTime(""); //TODO: move to register method
+        //版本 3.0 优化 - 填充其他字段
+//        serviceMetaInfo.setRegisterTime(""); //move to register method
         serviceMetaInfo.setServiceWeight(ServiceWeight.ZERO);   //默认 0
         serviceMetaInfo.setStartTime(DateUtils.formatLocalTimeDate(LocalDateTime.now()));
         serviceMetaInfo.setProtocol(Protocol.HTTP);

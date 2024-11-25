@@ -4,6 +4,7 @@ import com.jools.rpc.registry.RegistryServiceCache;
 import io.etcd.jetcd.ByteSequence;
 import io.etcd.jetcd.Watch;
 import io.etcd.jetcd.watch.WatchEvent;
+import lombok.extern.slf4j.Slf4j;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
@@ -14,6 +15,7 @@ import java.util.Set;
  * @date 2024/11/24 13:21
  * @description: TODO
  */
+@Slf4j
 public class EtcdWatchStrategy implements WatchStrategy {
 
     private Watch watchClient;
@@ -38,7 +40,12 @@ public class EtcdWatchStrategy implements WatchStrategy {
                         // key 删除时触发
                         case DELETE:
                             // 清理注册服务缓存
-                            registryServiceCache.clear(serviceNodeKey.substring(0, serviceNodeKey.lastIndexOf("/")));
+                            String serviceKey = serviceNodeKey.substring(0, serviceNodeKey.lastIndexOf("/"));
+                            registryServiceCache.clear(serviceKey);
+                            log.debug("DELETE Event: Clear Cache, serviceKey:{}", serviceKey);
+                            // 清除服务监听 key
+                            watchServiceKeySet.remove(serviceNodeKey);
+                            log.debug("DELETE Event: Stop watching serviceNodeKey:{}", serviceNodeKey);
                             break;
                         case PUT:
                         default:

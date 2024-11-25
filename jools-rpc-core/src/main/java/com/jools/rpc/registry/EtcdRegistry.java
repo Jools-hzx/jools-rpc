@@ -21,10 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
@@ -280,7 +277,14 @@ public class EtcdRegistry implements Registry {
 
             return serviceMetaInfos;
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            log.error("Service discovery fail, read from cache instead:{}", e.getMessage());
+            //服务发现异常,本地缓存兜底
+            if (serviceCache.containsKey(searchKey) && serviceCache.get(searchKey).size() != 0) {
+                log.info("ServiceKey:{} read from Cache", searchKey);
+                return registryServiceCache.readCache(searchKey);
+            } else {
+                return new ArrayList<>();
+            }
         }
     }
 

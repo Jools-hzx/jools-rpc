@@ -153,9 +153,6 @@ public class RedisRegistry implements Registry {
             log.info("Service node key {} is already being watched.", serviceNodeKey);
             return;
         }
-        log.info("Start watching service node key:{}, using strategy:{}",
-                serviceNodeKey,
-                watchStrategy.getClass().getSimpleName());
         watchStrategy.watch(serviceNodeKey);
     }
 

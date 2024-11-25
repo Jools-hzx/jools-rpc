@@ -37,7 +37,7 @@ public class BasicConsumerExample {
         log.info("Consumer Serializer type:{}", instance.getClass());
 
         /*
-         版本 3.0 - 支持切换注册中心
+         版本 3.0 - 支持切换注册中心 [Etcd + ZooKeeper + Redis]
          */
         RegistryConfig registryConfig = RpcApplication.getRpcConfig().getRegistryConfig();
         String registryType = registryConfig.getRegistryType();
@@ -46,14 +46,15 @@ public class BasicConsumerExample {
         User user = new User();
         user.setName("Jools Wakoo");
 
-        //调用
-        int cnt = 3;
+        //调用 - 连续调用三次; 预期结果: 第一次直接查询服务，第二、三次查询缓存
+        int cnt = 4;
+        User result = null;
         while (cnt-- > 0) {
-            User newUser = service.getUser(user);
-            if (newUser != null) {
-                System.out.println("调用成功!!!" + newUser.getName());
-            } else {
-                System.out.println("user == NULL !!!");
+            try {
+                result = service.getUser(user);
+                System.out.println(user == null ? "user == NULL !!!" : "User Name is: " + user.getName());
+            } catch (ClassCastException e) {
+                log.error("No serivceMetaInfo found for service:{}; Using default service: {}", service.getClass().getSimpleName());
             }
         }
 
