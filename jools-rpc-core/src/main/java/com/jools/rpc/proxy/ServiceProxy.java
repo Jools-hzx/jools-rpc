@@ -41,7 +41,6 @@ public class ServiceProxy implements InvocationHandler {
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 
         //指定序列化器
-        Serializer serializer = new JdkSerializer();
 
         //构建请求
         RpcRequest rpcRequest = RpcRequest.builder()
@@ -49,6 +48,7 @@ public class ServiceProxy implements InvocationHandler {
                 .methodName(method.getName())
                 .paramTypes(method.getParameterTypes())
                 .params(args)
+                .serviceVersion(RpcConstant.DEFAULT_SERVICE_VERSION)
                 .build();
 
         //序列化请求对象 - 发送请求
@@ -58,7 +58,6 @@ public class ServiceProxy implements InvocationHandler {
         String serviceName = method.getDeclaringClass().getName();
 
         try {
-            byte[] bytes = serializer.serialize(rpcRequest);
             byte[] result;
 
             /*
@@ -87,8 +86,7 @@ public class ServiceProxy implements InvocationHandler {
             //获取服务注册信息或者查询缓存
             registeredService01 = readServiceMetaInfo(serviceMetaInfos, serviceName);
             if ("default".equals(registeredService01.getServiceName())) {
-                return "";
-                //TODO: Handle if receive default service
+                log.info("No serviceMetaInfos found, return default serviceMetaInfo");
             }
 
             //元数据处理
@@ -97,24 +95,27 @@ public class ServiceProxy implements InvocationHandler {
                 //TODO: Handle MetaServiceInfo if exist
             }
 
-            String protocol = serviceMetaInfo.getProtocol();
-
-            if (!StrUtil.isBlank(protocol)) {
-                log.info("Current request protocol is: {}", protocol);
+            //从查询到的服务注册信息得到通信协议
+            String protocol = registeredService01.getProtocol();
+            log.info("Framework using protocol:{}", protocol);
+            if (StrUtil.isBlank(protocol)) {
+                log.error("Protocol unknown");
             }
 
-            //发送请求:基于 protocol + addr
+            //基于协议调用对应于的发送者
             RequestSender sender = RequestSenderFactory.getSender(protocol);
-            result = sender.convertAndSend(registeredService01.getServiceAddr(), bytes);
+            rpcResponse = sender.convertAndSend(registeredService01.getServiceAddr(), rpcRequest);
 
             //如果响应数据为空
-            if (result.length == 0) {
+            if (rpcResponse.getData() == null) {
                 log.error("Not Data receive from RPC request in :{}", this.getClass().getSimpleName());
                 //TODO: handle if data is empty
             }
 
             //反序列化响应结果
-            rpcResponse = serializer.deserialize(result, RpcResponse.class);
+//            rpcResponse = serializer.deserialize(result, RpcResponse.class);
+
+            //切换 - 基于 TCP 和 自定义协议 传输数据; 基于协议编码解码器
             return rpcResponse.getData();
         } catch (Exception e) {
             e.printStackTrace();
@@ -122,6 +123,13 @@ public class ServiceProxy implements InvocationHandler {
         return null;
     }
 
+    /**
+     * 解析最新服务注册信息 或者 读取缓存
+     *
+     * @param serviceMetaInfos 注册服务信息
+     * @param serviceName      注册服务名
+     * @return
+     */
     private ServiceMetaInfo readServiceMetaInfo(List<ServiceMetaInfo> serviceMetaInfos, String serviceName) {
         if (ObjectUtil.isNotEmpty(serviceMetaInfos)) {
             // 缓存服务信息

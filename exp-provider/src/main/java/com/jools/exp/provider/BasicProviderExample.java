@@ -14,6 +14,9 @@ import com.jools.rpc.serializer.Serializer;
 import com.jools.rpc.serializer.SerializerFactory;
 import com.jools.rpc.server.HttpServer;
 import com.jools.rpc.server.impl.VertxHttpServer;
+import com.jools.rpc.server.tcp.TcpServerHandler;
+import com.jools.rpc.server.tcp.VertxTcpClient;
+import com.jools.rpc.server.tcp.VertxTcpServer;
 import com.jools.rpc.utils.DateUtils;
 import lombok.extern.slf4j.Slf4j;
 
@@ -76,7 +79,9 @@ public class BasicProviderExample {
 //        serviceMetaInfo.setRegisterTime(""); //move to register method
         serviceMetaInfo.setServiceWeight(ServiceWeight.ZERO);   //默认 0
         serviceMetaInfo.setStartTime(DateUtils.formatLocalTimeDate(LocalDateTime.now()));
-        serviceMetaInfo.setProtocol(Protocol.HTTP);
+
+        //版本 4.0: 服务器 - 基于 TCP + 自定义协议 & 协议消息头
+        serviceMetaInfo.setProtocol(Protocol.TCP);
         serviceMetaInfo.setMetadata(new HashMap<>());
 
         //完成注册 - 默认为:
@@ -84,8 +89,13 @@ public class BasicProviderExample {
         //serviceNodeKey 为 com.jools.exp.common.service.UserService:1.0/localhost:888
         registry.registry(serviceMetaInfo);
 
-        //提供服务
-        HttpServer vertxServer = new VertxHttpServer();
-        vertxServer.doStart(8888);
+        //版本 1.0: 提供服务 - 基于 HTTP
+//        HttpServer vertxServer = new VertxHttpServer();
+//        vertxServer.doStart(8888);
+
+        //版本 4.0: 服务器 - 基于 TCP + 自定义协议 & 协议消息头
+        // 启动 TCP 服务
+        VertxTcpServer vertxTcpServer = new VertxTcpServer();
+        vertxTcpServer.doStart(8888);
     }
 }
