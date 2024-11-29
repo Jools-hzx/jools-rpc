@@ -103,6 +103,7 @@ public class ServiceProxy implements InvocationHandler {
             }
 
             //基于协议调用对应于的发送者
+            //优化: 针对 Tcp 通信协议引入半包粘包处理器
             RequestSender sender = RequestSenderFactory.getSender(protocol);
             rpcResponse = sender.convertAndSend(registeredService01.getServiceAddr(), rpcRequest);
 

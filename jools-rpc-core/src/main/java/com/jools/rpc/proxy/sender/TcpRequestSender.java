@@ -5,6 +5,7 @@ import com.jools.rpc.RpcApplication;
 import com.jools.rpc.model.RpcRequest;
 import com.jools.rpc.model.RpcResponse;
 import com.jools.rpc.protocol.*;
+import com.jools.rpc.server.tcp.TcpBufferHandlerWrapper;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.net.NetClient;
@@ -14,20 +15,22 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 /**
  * @author Jools He
  * @version 1.0
  * @date 2024/11/28 11:15
  * @description: 请求协议 - TCP
- * RpcRequest 携带自定义消息头被封装为 ProtocolMessage 编码成 Buffer 发送;
- * ProtocolMessage 响应解码得到请求体内的 RpcResponse
+ * 作用:
+ *  RpcRequest 携带自定义消息头被封装为 ProtocolMessage 编码成 Buffer 发送;
+ *  ProtocolMessage 响应解码得到请求体内的 RpcResponse 得到服务响应数据
+ * 优化: 使用装饰器模式引入 tcp 半包粘包处理器
  */
 @Slf4j
 public class TcpRequestSender implements RequestSender {
+
     @Override
-    public RpcResponse convertAndSend(String serviceAddr, RpcRequest rpcRequest) throws ExecutionException, InterruptedException {
+    public RpcResponse convertAndSend(String serviceAddr, RpcRequest rpcRequest) {
         //接受 RpcResponse - 异步转同步
         CompletableFuture<RpcResponse> responseFuture = new CompletableFuture<>();
         RpcResponse rpcResponse = null;
@@ -70,7 +73,7 @@ public class TcpRequestSender implements RequestSender {
                         throw new RuntimeException(e);
                     }
                     //接受响应
-                    socket.handler(buffer -> {
+                    TcpBufferHandlerWrapper bufferHandlerWrapper = new TcpBufferHandlerWrapper(buffer -> {
                         //解码后得到响应
                         try {
                             //基于响应的 buffer 反编码
@@ -82,6 +85,7 @@ public class TcpRequestSender implements RequestSender {
                             throw new RuntimeException(e);
                         }
                     });
+                    socket.handler(bufferHandlerWrapper);
                 } else {
                     log.error("Fail to build a tcp connection");
                 }

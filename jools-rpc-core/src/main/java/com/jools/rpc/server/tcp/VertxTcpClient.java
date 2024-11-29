@@ -1,9 +1,11 @@
 package com.jools.rpc.server.tcp;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.net.NetClient;
 import io.vertx.core.net.NetSocket;
 import lombok.extern.slf4j.Slf4j;
+
 
 /**
  * @author Jools He
@@ -22,12 +24,21 @@ public class VertxTcpClient {
             if (connected.succeeded()) {
                 System.out.println("Connected to TCP server");
                 NetSocket socket = connected.result();
+
+                for (int i = 0; i < 1000; i++) {
+                    //发送数据
+                    Buffer buffer = Buffer.buffer();
+                    String str = "Hello, server! Hello, server ! Hello, server !";
+                    buffer.appendInt(0);
+                    buffer.appendInt(str.getBytes().length);
+                    buffer.appendBytes(str.getBytes());
+                    socket.write(buffer);
+                }
                 //发送数据
-                socket.write("Hello, server!");
                 //接收响应
                 socket.handler(buffer -> {
                     //TODO: add handle response logic
-                    System.out.println("Receive response from server: " + buffer);
+                    System.out.println("Receive response from server: " + buffer.toString());
                 });
             } else {
                 log.error("Failed to connect to TCP server");

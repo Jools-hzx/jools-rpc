@@ -3,10 +3,7 @@ package com.jools.rpc.server.tcp;
 import com.jools.rpc.RpcApplication;
 import com.jools.rpc.model.RpcRequest;
 import com.jools.rpc.model.RpcResponse;
-import com.jools.rpc.protocol.ProtocolMessage;
-import com.jools.rpc.protocol.ProtocolMessageDecoder;
-import com.jools.rpc.protocol.ProtocolMessageEncoder;
-import com.jools.rpc.protocol.ProtocolMessageTypeEnum;
+import com.jools.rpc.protocol.*;
 import com.jools.rpc.registry.LocalRegistry;
 import com.jools.rpc.serializer.Serializer;
 import com.jools.rpc.serializer.SerializerFactory;
@@ -24,7 +21,9 @@ import java.lang.reflect.Method;
 
 /**
  * @author Jools He
- * @description: Tcp 请求处理器 - 服务提供者用于处理消费者的请求和响应回复
+ * @description:
+ * Tcp 请求处理器 - 服务提供者用于处理消费者的请求和响应回复
+ * 优化: 基于装饰者模式引入 tcp 半包粘包处理器
  */
 
 @Slf4j
@@ -33,9 +32,7 @@ public class TcpServerHandler implements Handler<NetSocket> {
     @Override
     public void handle(NetSocket socket) {
 
-        //处理连接
-        socket.handler(buffer -> {
-
+        TcpBufferHandlerWrapper bufferHandlerWrapper = new TcpBufferHandlerWrapper(buffer -> {
             //解码反序列化，由 Buffer 获取 ProtocolMessage
             ProtocolMessage<RpcRequest> requestProtocolMessage;
             try {
@@ -64,13 +61,15 @@ public class TcpServerHandler implements Handler<NetSocket> {
                 result = method.invoke(instance, params);
 
                 //构建 RpcResponse - 成功
-                rpcResponse.setMsg("2xx - Request Succeed");
+                //优化，基于 State 枚举类的内容
+                rpcResponse.setMsg(ProtocolMessageStateEnum.REQUEST_SUCCESS.getText());
                 rpcResponse.setDataType(method.getReturnType());
                 rpcResponse.setData(result);
             } catch (Exception e) {
                 log.error("Error when reflecting instance:{}", cls.getSimpleName());
                 //构建 RcpResponse - 失败
-                rpcResponse.setMsg("5xx - Server Handle error");
+                //优化，基于 State 枚举类内容
+                rpcResponse.setMsg(ProtocolMessageStateEnum.RESPONSE_FAIL.getText());
                 rpcResponse.setException(e);
             }
 
@@ -87,5 +86,8 @@ public class TcpServerHandler implements Handler<NetSocket> {
                 throw new RuntimeException("Encode fail at TcpServerHandler --- handle()");
             }
         });
+
+        //处理连接
+        socket.handler(bufferHandlerWrapper);
     }
 }
