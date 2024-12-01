@@ -22,8 +22,8 @@ import java.util.concurrent.CompletableFuture;
  * @date 2024/11/28 11:15
  * @description: 请求协议 - TCP
  * 作用:
- *  RpcRequest 携带自定义消息头被封装为 ProtocolMessage 编码成 Buffer 发送;
- *  ProtocolMessage 响应解码得到请求体内的 RpcResponse 得到服务响应数据
+ * RpcRequest 携带自定义消息头被封装为 ProtocolMessage 编码成 Buffer 发送;
+ * ProtocolMessage 响应解码得到请求体内的 RpcResponse 得到服务响应数据
  * 优化: 使用装饰器模式引入 tcp 半包粘包处理器
  */
 @Slf4j
@@ -53,16 +53,16 @@ public class TcpRequestSender implements RequestSender {
                     ProtocolMessage<RpcRequest> requestProtocolMessage = new ProtocolMessage<>();
                     //构造请求头
                     ProtocolMessage.Header header = requestProtocolMessage.getHeader();
-                    header.setMagic(ProtocolConstant.MAGIC);    //魔数
-                    header.setVersion(ProtocolConstant.VERSION);    //版本
+                    header.setMagic(ProtocolConstant.MAGIC);                                    //魔数
+                    header.setVersion(ProtocolConstant.VERSION);                                //版本
                     header.setMessageType(ProtocolMessageTypeEnum.REQUEST.getMessageType());    //消息类型
-                    header.setSerializerType(       // 序列协议
+                    header.setSerializerType(                                                   // 序列协议
                             Objects.requireNonNull(
                                     ProtocolSerializerTypeEnum.getSerializerTypeByKey(
                                             RpcApplication.getRpcConfig().getSerializer())).getType());
-                    header.setMessageId(IdUtil.getSnowflakeNextId());   //消息唯一标识 id
-                    requestProtocolMessage.setBody(rpcRequest);    //以 RpcRequest 作为消息体
-                    requestProtocolMessage.setHeader(header);      //携带消息头
+                    header.setMessageId(IdUtil.getSnowflakeNextId());                           //消息唯一标识 id
+                    requestProtocolMessage.setBody(rpcRequest);        //以 RpcRequest 作为消息体
+                    requestProtocolMessage.setHeader(header);          //携带消息头
 
                     Buffer buf;
                     try {
@@ -72,7 +72,7 @@ public class TcpRequestSender implements RequestSender {
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
-                    //接受响应
+                    //接受响应 - 优化，基于装饰者模式增强解决 TCP 粘包半包问题
                     TcpBufferHandlerWrapper bufferHandlerWrapper = new TcpBufferHandlerWrapper(buffer -> {
                         //解码后得到响应
                         try {

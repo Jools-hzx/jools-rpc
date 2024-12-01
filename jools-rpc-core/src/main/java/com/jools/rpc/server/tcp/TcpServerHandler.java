@@ -21,8 +21,7 @@ import java.lang.reflect.Method;
 
 /**
  * @author Jools He
- * @description:
- * Tcp 请求处理器 - 服务提供者用于处理消费者的请求和响应回复
+ * @description: Tcp 请求处理器 - 服务提供者用于处理消费者的请求和响应回复
  * 优化: 基于装饰者模式引入 tcp 半包粘包处理器
  */
 

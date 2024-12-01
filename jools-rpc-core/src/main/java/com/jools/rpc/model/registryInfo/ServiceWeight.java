@@ -6,7 +6,9 @@ package com.jools.rpc.model.registryInfo;
  */
 public interface ServiceWeight {
 
-    String ZERO = "0";
-    String ONE = "1";
-    String TWO = "2";
+    Integer ZERO = 0;
+    Integer ONE = 1;
+    Integer TWO = 2;
+    Integer THREE = 3;
+    Integer FOUR = 4;
 }

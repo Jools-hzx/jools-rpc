@@ -1,0 +1,4 @@
+round=com.jools.rpc.loadbalancer.RoundRobinLoadBalancer
+random=com.jools.rpc.loadbalancer.RandomLoadBalancer
+hash=com.jools.rpc.loadbalancer.ConsistentHashLoadBalancer
+weight=com.jools.rpc.loadbalancer.RoundWeightRoundBalancer

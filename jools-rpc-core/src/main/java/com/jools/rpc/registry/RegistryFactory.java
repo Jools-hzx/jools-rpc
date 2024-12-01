@@ -9,7 +9,8 @@ import com.jools.rpc.spi.SpiLoader;
 public class RegistryFactory {
 
     /**
-     * 自动加载所有 Registry 类配置的 key -> 实现类全类名映射
+     * 自动加载 SPI 自定义资源路径下所有注册中心配置
+     * 配置格式: key=注册中心实现类全类名
      */
     static {
         SpiLoader.load(Registry.class);

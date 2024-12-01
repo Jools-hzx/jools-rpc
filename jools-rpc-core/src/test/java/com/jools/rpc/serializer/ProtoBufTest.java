@@ -36,6 +36,14 @@ public class ProtoBufTest {
             UserOuterClass.User deserializedPerson = serializer.deserialize(serializedData, UserOuterClass.User.class);
             System.out.println("Deserialized Person: " + deserializedPerson);
 
+            /*
+                输出:
+                Serialized Data: 34 bytes
+                Deserialized Person: name: "Jools He"
+                age: 30
+                email: "jools666@example.com"
+             */
+
         } catch (IOException e) {
             e.printStackTrace();
         }

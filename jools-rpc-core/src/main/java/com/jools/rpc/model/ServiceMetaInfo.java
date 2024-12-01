@@ -65,7 +65,12 @@ public class ServiceMetaInfo {
     /**
      * 服务权重，默认 0
      */
-    private String serviceWeight = ServiceWeight.ZERO;
+    private Integer serviceWeight = ServiceWeight.ZERO;
+
+    /**
+     * 服务的动态权重
+     */
+    private Integer currentWeight = ServiceWeight.ZERO;
 
     /**
      * 自定义元数据
@@ -84,8 +89,18 @@ public class ServiceMetaInfo {
     }
 
     /**
+     * 返回当前服务 ip:port
+     *
+     * @return
+     */
+    public String getServiceIpAndPort() {
+        return this.serviceHost + ":" + this.servicePort;
+    }
+
+    /**
      * 获取服务注册键名 + 服务当前版本
-     *1
+     * 1
+     *
      * @return
      */
     public String getServiceKey() {

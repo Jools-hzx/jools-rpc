@@ -2,10 +2,14 @@ package com.jools.rpc.proxy;
 
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSON;
+import cn.hutool.json.JSONUtil;
 import com.jools.rpc.RpcApplication;
 import com.jools.rpc.config.RegistryConfig;
 import com.jools.rpc.config.RpcConfig;
 import com.jools.rpc.constant.RpcConstant;
+import com.jools.rpc.loadbalancer.LoadBalanceFactory;
+import com.jools.rpc.loadbalancer.LoadBalancer;
 import com.jools.rpc.model.RpcRequest;
 import com.jools.rpc.model.RpcResponse;
 import com.jools.rpc.model.ServiceMetaInfo;
@@ -20,6 +24,8 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -51,6 +57,9 @@ public class ServiceProxy implements InvocationHandler {
                 .serviceVersion(RpcConstant.DEFAULT_SERVICE_VERSION)
                 .build();
 
+        //构造请求参数 - 用于负载均衡
+        Map<String, Object> requestParams = getRequestParams(method);
+
         //序列化请求对象 - 发送请求
         RpcResponse rpcResponse = null;
 
@@ -81,11 +90,17 @@ public class ServiceProxy implements InvocationHandler {
             List<ServiceMetaInfo> serviceMetaInfos = registry.serviceDiscovery(serviceMetaInfo.getServiceKey());
             log.info("Discovery ServiceMetaInfos size:{}", serviceMetaInfos.size());
 
-            ServiceMetaInfo registeredService01;
+            ServiceMetaInfo selectedServiceMetaInfo;
 
             //获取服务注册信息或者查询缓存
-            registeredService01 = readServiceMetaInfo(serviceMetaInfos, serviceName);
-            if ("default".equals(registeredService01.getServiceName())) {
+            selectedServiceMetaInfo = readServiceMetaInfo(
+                    serviceMetaInfos,
+                    serviceMetaInfo.getServiceName(),
+                    requestParams);
+            log.info("Selected ServiceMetaInfo{}", JSONUtil.formatJsonStr(selectedServiceMetaInfo.toString()));
+
+            //没有注册信息
+            if ("default".equals(selectedServiceMetaInfo.getServiceName())) {
                 log.info("No serviceMetaInfos found, return default serviceMetaInfo");
             }
 
@@ -96,7 +111,7 @@ public class ServiceProxy implements InvocationHandler {
             }
 
             //从查询到的服务注册信息得到通信协议
-            String protocol = registeredService01.getProtocol();
+            String protocol = selectedServiceMetaInfo.getProtocol();
             log.info("Framework using protocol:{}", protocol);
             if (StrUtil.isBlank(protocol)) {
                 log.error("Protocol unknown");
@@ -105,7 +120,7 @@ public class ServiceProxy implements InvocationHandler {
             //基于协议调用对应于的发送者
             //优化: 针对 Tcp 通信协议引入半包粘包处理器
             RequestSender sender = RequestSenderFactory.getSender(protocol);
-            rpcResponse = sender.convertAndSend(registeredService01.getServiceAddr(), rpcRequest);
+            rpcResponse = sender.convertAndSend(selectedServiceMetaInfo.getServiceAddr(), rpcRequest);
 
             //如果响应数据为空
             if (rpcResponse.getData() == null) {
@@ -131,16 +146,20 @@ public class ServiceProxy implements InvocationHandler {
      * @param serviceName      注册服务名
      * @return
      */
-    private ServiceMetaInfo readServiceMetaInfo(List<ServiceMetaInfo> serviceMetaInfos, String serviceName) {
+    private ServiceMetaInfo readServiceMetaInfo(List<ServiceMetaInfo> serviceMetaInfos,
+                                                String serviceName,
+                                                Map<String, Object> reqParams) {
         if (ObjectUtil.isNotEmpty(serviceMetaInfos)) {
             // 缓存服务信息
             consumerServiceCache.writeCache(serviceName, serviceMetaInfos);
-            log.info("Saved service info list to cache, serviceKey: {}", serviceName);
-            // 默认使用第一个服务节点
-            return serviceMetaInfos.get(0);
+            log.info("Updated service info list to cache, serviceKey: {}", serviceName);
+            // 优化 - 基于负载均衡算法选取
+            LoadBalancer loadBalancer = LoadBalanceFactory.getInstance(RpcApplication.getRpcConfig().getLoadBalance());
+            log.info("Using loadBalance, rule:{}", loadBalancer.getClass().getSimpleName());
+            return loadBalancer.selectService(reqParams, serviceMetaInfos);
         }
 
-        // 如果服务信息为空，从本地缓存读取
+        // 如果服务信息为空，尝试本地缓存读取
         log.info("No ServiceMetaInfo found by RPC request, attempting to read from cache, serviceKey: {}", serviceName);
         List<ServiceMetaInfo> cachedServiceMetaInfos = consumerServiceCache.readCache(serviceName);
 
@@ -149,5 +168,15 @@ public class ServiceProxy implements InvocationHandler {
         }
 
         return cachedServiceMetaInfos.get(0);
+    }
+
+    //封装请求方法名
+    private Map<String, Object> getRequestParams(Method method) {
+        String serviceName = method.getDeclaringClass().getName();
+        String methodName = method.getName();
+        return new HashMap<>() {{
+            put("serviceName", serviceName);
+            put("methodName", methodName);
+        }};
     }
 }

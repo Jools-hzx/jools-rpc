@@ -91,7 +91,7 @@ public class SpiLoader {
             return null;
         }
 
-        //基于 interface 类名查询其所有 keu => 实现类类名 记录
+        //基于 interface 类名查询其所有 key => key 用于映射相关实现类全类名
         Map<String, Class<?>> keyClassMap = loaderMap.get(name);
 
         //检查 loaderMap 是否为空
@@ -105,7 +105,7 @@ public class SpiLoader {
             throw new RuntimeException(String.format("Class:{} doesn't have key:{%s} impl instance", name, key));
         }
 
-        //获取要加载的实例类 Class
+        //基于 key 获取要加载的实例类 Class
         Class<?> implClass = keyClassMap.get(key);
         //得到全类名
         String implClassName = implClass.getName();
@@ -116,7 +116,7 @@ public class SpiLoader {
             log.info("Not impl class name:{} load it",
                     implClassName);
             try {
-                //写入缓存: key(全类名) value(实例)
+                //写入缓存: 格式为 key(全类名) value(实例)
                 instanceCache.put(implClassName, implClass.getDeclaredConstructor().newInstance());
             } catch (Exception e) {
                 throw new RuntimeException(e);

@@ -1,5 +1,6 @@
 package com.jools.rpc.config;
 
+import com.jools.rpc.loadbalancer.LoadBalancerKeys;
 import com.jools.rpc.serializer.SerializerKeys;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -50,5 +51,10 @@ public class RpcConfig {
      * 注册中心配置
      */
     private RegistryConfig registryConfig = new RegistryConfig();
+
+    /**
+     * 负载均衡器配置
+     */
+    private String loadBalance = LoadBalancerKeys.ROUND_ROBIN;
 
 }
