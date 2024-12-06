@@ -24,7 +24,7 @@ public class LoadBalanceFactory {
     public static LoadBalancer defaultLoadBalancer = new RoundRobinLoadBalancer();
 
     /**
-     * 基于配置 loadBalancer key 获取相应的实现类
+     * 基于 loadBalancer key 获取实现类
      *
      * @param key 负载均衡 key
      * @return

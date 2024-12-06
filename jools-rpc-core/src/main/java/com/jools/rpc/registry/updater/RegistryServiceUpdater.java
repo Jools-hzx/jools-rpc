@@ -16,10 +16,13 @@ import java.util.concurrent.Executors;
  * @author Jools He
  * @version 1.0
  * @date 2024/12/1 18:08
- * @description: TODO
+ * @description: 配合负载均衡规则 - 权重轮询使用
+ * 各个服务节点更新在内存当前权重(currentWeight)之后
+ * 通过相应的注册中心 Client 完成服务信息注册
  */
 @Slf4j
 public class RegistryServiceUpdater {
+
     // 创建线程池
     private static final ExecutorService executor = Executors.newFixedThreadPool(10);
 
@@ -35,7 +38,7 @@ public class RegistryServiceUpdater {
                 RpcApplication.getRpcConfig().getRegistryConfig().getRegistryType()
         );
 
-        //将每个服务的注册操作包装成异步任务
+        //将每个服务的注册操作(更新当前服务的权重 currentWeight )包装成异步任务
         List<CompletableFuture<Void>> futures = list.stream().map(
                 info -> CompletableFuture.runAsync(() -> {
                     try {

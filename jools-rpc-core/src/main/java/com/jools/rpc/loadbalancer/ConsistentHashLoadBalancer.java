@@ -19,7 +19,11 @@ import java.util.TreeMap;
  * @author Jools He
  * @version 1.0
  * @date 2024/11/30 12:12
- * @description: TODO
+ * @description: 一致性Hash负载均衡
+ * 规则:
+ * 1. hash(IP + port) % 16384 计算选取的 hash 环下标
+ * 2. 选择最接近且大于调用请求的 hash 值的虚拟节点
+ * 3. 如果不存在则返回首个服务节点下标
  */
 @Slf4j
 public class ConsistentHashLoadBalancer implements LoadBalancer {

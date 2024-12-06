@@ -12,6 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @version 1.0
  * @date 2024/11/30 12:12
  * @description: 轮询负载均衡器，基于 JUC 得 AtomicInteger
+ * 规则: 每次选取的服务节点下标为 AtomicInteger mod ServiceMetaInfo list 的 size
  */
 public class RoundRobinLoadBalancer implements LoadBalancer {
 

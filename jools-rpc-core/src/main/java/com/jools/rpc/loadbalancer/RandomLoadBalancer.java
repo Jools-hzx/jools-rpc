@@ -12,6 +12,8 @@ import java.util.Random;
  * @version 1.0
  * @date 2024/11/30 12:12
  * @description: 随机轮询负载均衡器
+ * 规则:
+ * 随机返回下标 [范围: 0 ~ list.size()]
  */
 public class RandomLoadBalancer implements LoadBalancer {
     @Override

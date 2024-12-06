@@ -16,6 +16,11 @@ import java.util.Objects;
  * @version 1.0
  * @date 2024/12/1 16:59
  * @description: 加权轮询算法
+ * 规则:
+ * 1. 每一轮选中权重最大的服务节点；
+ * 2. 被选中的服务节点当前权重(currentWeight)减去总权重(totalWeight)
+ * 3. 每个服务节点更新当前权重(currentWeight) + 自身服务权重(serviceWeight)
+ * 4. 异步更新各个服务节点的权重到注册中心
  */
 @Slf4j
 public class RoundWeightRoundBalancer implements LoadBalancer {
@@ -34,7 +39,7 @@ public class RoundWeightRoundBalancer implements LoadBalancer {
             return list.get(0);
         }
 
-        //计算权重和
+        //1. 计算权重和
         synchronized (this) {
             if (this.totalWeight == -1) {
                 // 提取设置的 serviceWeight 字段; 求权值总和
@@ -47,21 +52,21 @@ public class RoundWeightRoundBalancer implements LoadBalancer {
             }
         }
 
-        //选取当前服务权重最高的服务
+        //2. 选取当前服务权重最高的服务
         ServiceMetaInfo selectServiceMeta = list.stream().max(Comparator.comparingInt(ServiceMetaInfo::getCurrentWeight)).get();
         log.debug("Selected ServiceMetaInfo: {}", JSONUtil.formatJsonStr(selectServiceMeta.toString()));
 
-        //更新当前选取的服务权重: 当前权重 - 初始总权重
+        //3. 更新当前选取的服务权重: 当前权重(currentWeight) - 初始总权重(totalWeight)
         selectServiceMeta.setCurrentWeight(selectServiceMeta.getCurrentWeight() - this.totalWeight);
         log.debug("Update selected ServiceMetaInfo weight:{}", selectServiceMeta.getCurrentWeight());
 
-        //更新所有服务的当前权重为: 当前权重 + 初始设置权重
+        //4. 更新所有服务的当前权重为: 当前权重(currentWeight) + 初始设置权重(serviceWeight)
         list.forEach((info) -> {
             info.setCurrentWeight(info.getCurrentWeight() + info.getServiceWeight());
 //            log.debug("Update serviceMetaInfo:{}", JSONUtil.formatJsonStr(info.toString()));
         });
 
-        //异步 - 更新注册权重到注册中心
+        //5. 异步 - 更新注册权重到注册中心
         RegistryServiceUpdater.asynUpdateServiceMetaInfos(list);
 
         return selectServiceMeta;

@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author Jools He
  * @version 1.0
  * @date 2024/11/10 12:19
- * @description: 服务缓存类 - 支持基于 ServiceKey(serviceName:version) 缓存多服务
+ * @description: 服务缓存类 - 支持基于 ServiceKey(serviceName:version) 缓存已经发现的服务节点
  */
 @Slf4j
 public class RegistryServiceCache {

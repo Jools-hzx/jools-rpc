@@ -46,6 +46,9 @@ public class RedisRegistry implements Registry {
      */
     private Jedis jedis;
 
+    /**
+     * 各服务节点前缀
+     */
     private static final String REDIS_ROOT_HEADER = "/rpc/";
 
     /**
@@ -58,8 +61,14 @@ public class RedisRegistry implements Registry {
      */
     private final Set<String> watchServiceKeySet = new ConcurrentHashSet<>();
 
+    /**
+     * 监听策略
+     */
     private WatchStrategy watchStrategy;
 
+    /**
+     * 是否已经启动监听机制 - 默认 false
+     */
     private boolean isHeartBeatScheduled = false;
 
     public void setWatchStrategy(WatchStrategy watchStrategy) {

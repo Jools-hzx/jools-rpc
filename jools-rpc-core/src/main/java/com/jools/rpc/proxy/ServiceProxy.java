@@ -170,7 +170,7 @@ public class ServiceProxy implements InvocationHandler {
         return cachedServiceMetaInfos.get(0);
     }
 
-    //封装请求方法名
+    //请求参数：请求服务名 + 请求方法名；用于 Hash 计算
     private Map<String, Object> getRequestParams(Method method) {
         String serviceName = method.getDeclaringClass().getName();
         String methodName = method.getName();

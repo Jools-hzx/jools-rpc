@@ -32,6 +32,9 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ZooKeeperRegistry implements Registry {
 
+    /**
+     * ZK Client 端
+     */
     private CuratorFramework client;
 
     private ServiceDiscovery<ServiceMetaInfo> serviceDiscovery;
@@ -56,6 +59,9 @@ public class ZooKeeperRegistry implements Registry {
      */
     public static final String ZK_ROOT_PATH = "/rpc/zk";
 
+    /**
+     * 监听策略
+     */
     private WatchStrategy watchStrategy;
 
     public void setWatchStrategy(WatchStrategy watchStrategy) {
