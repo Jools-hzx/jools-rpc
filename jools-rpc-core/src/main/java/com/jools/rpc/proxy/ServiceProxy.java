@@ -8,6 +8,8 @@ import com.jools.rpc.RpcApplication;
 import com.jools.rpc.config.RegistryConfig;
 import com.jools.rpc.config.RpcConfig;
 import com.jools.rpc.constant.RpcConstant;
+import com.jools.rpc.fault.retry.RetryStrategy;
+import com.jools.rpc.fault.retry.RetryStrategyFactory;
 import com.jools.rpc.loadbalancer.LoadBalanceFactory;
 import com.jools.rpc.loadbalancer.LoadBalancer;
 import com.jools.rpc.model.RpcRequest;
@@ -46,8 +48,6 @@ public class ServiceProxy implements InvocationHandler {
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 
-        //指定序列化器
-
         //构建请求
         RpcRequest rpcRequest = RpcRequest.builder()
                 .serviceName(method.getDeclaringClass().getName())
@@ -78,17 +78,17 @@ public class ServiceProxy implements InvocationHandler {
 
             //获取当前注册中心实例,
             Registry registry = RegistryFactory.getRegistry(registryConfig.getRegistryType());
-            log.info("Consumer registry type:{}", registryConfig.getRegistryType());
+            log.debug("Consumer registry type:{}", registryConfig.getRegistryType());
 
             //构建 ServiceMetaInfo 信息
             ServiceMetaInfo serviceMetaInfo = new ServiceMetaInfo();
             serviceMetaInfo.setServiceName(serviceName);
             serviceMetaInfo.setServiceVersion(RpcConstant.DEFAULT_SERVICE_VERSION);
-            log.info("Consumer request RPC service name:{}", serviceName);
+            log.debug("Consumer request RPC service name:{}", serviceName);
 
             //基于 ServiceMetaInfo 内的 ServiceKey 查询所有服务节点
             List<ServiceMetaInfo> serviceMetaInfos = registry.serviceDiscovery(serviceMetaInfo.getServiceKey());
-            log.info("Discovery ServiceMetaInfos size:{}", serviceMetaInfos.size());
+            log.debug("Discovery ServiceMetaInfos size:{}", serviceMetaInfos.size());
 
             ServiceMetaInfo selectedServiceMetaInfo;
 
@@ -118,9 +118,15 @@ public class ServiceProxy implements InvocationHandler {
             }
 
             //基于协议调用对应于的发送者
-            //优化: 针对 Tcp 通信协议引入半包粘包处理器
+            //优化: 针对 TCP 通信协议引入半包粘包处理器
             RequestSender sender = RequestSenderFactory.getSender(protocol);
-            rpcResponse = sender.convertAndSend(selectedServiceMetaInfo.getServiceAddr(), rpcRequest);
+
+            //重试机制
+            RetryStrategy retryStrategy = RetryStrategyFactory.getRetryStrategy(RpcApplication.getRpcConfig().getRetryStrategyKey());
+            //lambda 表达式封装
+            rpcResponse = retryStrategy.doRetry(() -> {
+                return sender.convertAndSend(selectedServiceMetaInfo.getServiceAddr(), rpcRequest);
+            });
 
             //如果响应数据为空
             if (rpcResponse.getData() == null) {

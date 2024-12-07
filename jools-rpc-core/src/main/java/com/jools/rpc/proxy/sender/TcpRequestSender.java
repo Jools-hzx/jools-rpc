@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Jools He
@@ -87,12 +88,12 @@ public class TcpRequestSender implements RequestSender {
                     });
                     socket.handler(bufferHandlerWrapper);
                 } else {
-                    log.error("Fail to build a tcp connection");
+                    responseFuture.completeExceptionally(new RuntimeException("Fail to build a TCP connection"));
                 }
             });
 
-            //阻塞直到获取到响应
-            rpcResponse = responseFuture.get();
+            //阻塞直到获取到响应; 超过 10 s 则超时
+            rpcResponse = responseFuture.get(10, TimeUnit.SECONDS);
 
         } catch (Exception e) {
             log.error(e.getMessage());

@@ -1,0 +1,5 @@
+no=com.jools.rpc.fault.retry.NoRetryStrategy
+fixInterval=com.jools.rpc.fault.retry.FixIntervalRetryStrategy
+random=com.jools.rpc.fault.retry.RandomWaitRetryStrategy
+exponent=com.jools.rpc.fault.retry.ExponentialWaitRetryStrategy
+fixIncrement=com.jools.rpc.fault.retry.FixIncrementRetryStrategy

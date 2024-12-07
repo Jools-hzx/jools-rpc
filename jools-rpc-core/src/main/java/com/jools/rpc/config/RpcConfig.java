@@ -1,6 +1,9 @@
 package com.jools.rpc.config;
 
+import com.jools.rpc.fault.retry.RetryStrategyFactory;
+import com.jools.rpc.fault.retry.RetryStrategyKeys;
 import com.jools.rpc.loadbalancer.LoadBalancerKeys;
+import com.jools.rpc.registry.RegistryFactory;
 import com.jools.rpc.serializer.SerializerKeys;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -56,5 +59,10 @@ public class RpcConfig {
      * 负载均衡器配置
      */
     private String loadBalance = LoadBalancerKeys.ROUND_ROBIN;
+
+    /**
+     * 请求重试策略，默认不开启
+     */
+    private String retryStrategyKey = RetryStrategyKeys.noRetry;
 
 }
