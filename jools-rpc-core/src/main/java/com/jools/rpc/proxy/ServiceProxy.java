@@ -1,7 +1,9 @@
 package com.jools.rpc.proxy;
 
+import cn.hutool.cache.impl.FIFOCache;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.crypto.digest.otp.TOTP;
 import cn.hutool.json.JSON;
 import cn.hutool.json.JSONUtil;
 import com.jools.rpc.RpcApplication;
@@ -10,6 +12,9 @@ import com.jools.rpc.config.RpcConfig;
 import com.jools.rpc.constant.RpcConstant;
 import com.jools.rpc.fault.retry.RetryStrategy;
 import com.jools.rpc.fault.retry.RetryStrategyFactory;
+import com.jools.rpc.fault.tolerant.ErrorTolerantKeys;
+import com.jools.rpc.fault.tolerant.ErrorTolerantStrategy;
+import com.jools.rpc.fault.tolerant.ErrorTolerantStrategyFactory;
 import com.jools.rpc.loadbalancer.LoadBalanceFactory;
 import com.jools.rpc.loadbalancer.LoadBalancer;
 import com.jools.rpc.model.RpcRequest;
@@ -30,6 +35,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * @author Jools He
@@ -66,6 +72,12 @@ public class ServiceProxy implements InvocationHandler {
         //调用服务名称: 接口全类名
         String serviceName = method.getDeclaringClass().getName();
 
+        //容错机制
+        RpcResponse failTolerantResp = null;
+
+        //查询到的所有服务节点
+        List<ServiceMetaInfo> discoveryServiceMetaInfos = new CopyOnWriteArrayList<>();
+
         try {
             byte[] result;
 
@@ -89,6 +101,9 @@ public class ServiceProxy implements InvocationHandler {
             //基于 ServiceMetaInfo 内的 ServiceKey 查询所有服务节点
             List<ServiceMetaInfo> serviceMetaInfos = registry.serviceDiscovery(serviceMetaInfo.getServiceKey());
             log.debug("Discovery ServiceMetaInfos size:{}", serviceMetaInfos.size());
+            if (ObjectUtil.isNotNull(serviceMetaInfos) && ObjectUtil.isNotEmpty(serviceMetaInfos)) {
+                discoveryServiceMetaInfos.addAll(serviceMetaInfos);
+            }
 
             ServiceMetaInfo selectedServiceMetaInfo;
 
@@ -99,9 +114,9 @@ public class ServiceProxy implements InvocationHandler {
                     requestParams);
             log.info("Selected ServiceMetaInfo{}", JSONUtil.formatJsonStr(selectedServiceMetaInfo.toString()));
 
-            //没有注册信息
+            //无注册信息 & 无合法缓存节点信息
             if ("default".equals(selectedServiceMetaInfo.getServiceName())) {
-                log.info("No serviceMetaInfos found, return default serviceMetaInfo");
+                log.warn("No serviceMetaInfos found, return default serviceMetaInfo");
             }
 
             //元数据处理
@@ -123,10 +138,40 @@ public class ServiceProxy implements InvocationHandler {
 
             //重试机制
             RetryStrategy retryStrategy = RetryStrategyFactory.getRetryStrategy(RpcApplication.getRpcConfig().getRetryStrategyKey());
-            //lambda 表达式封装
-            rpcResponse = retryStrategy.doRetry(() -> {
-                return sender.convertAndSend(selectedServiceMetaInfo.getServiceAddr(), rpcRequest);
-            });
+
+            //lambda 表达式封装成 Callable
+            try {
+                rpcResponse = retryStrategy.doRetry(() -> {
+                    return sender.convertAndSend(selectedServiceMetaInfo.getServiceAddr(), rpcRequest);
+                });
+            } catch (Exception e) {
+                String tolerantStrategyKeys = RpcApplication.getRpcConfig().getErrorTolerantStrategyKeys();
+                ErrorTolerantStrategy tolerantStrategy = ErrorTolerantStrategyFactory.getTolerantStrategy(tolerantStrategyKeys);
+                Map<String, Object> respContext = null;
+                //Fail Back 策略
+                if (tolerantStrategyKeys.equals(ErrorTolerantKeys.FAIL_BACK)) {
+                    respContext = new HashMap<>() {{
+                        put("RpcRequest", rpcRequest);
+                    }};
+                }
+                //Fail Over 策略 - 已经访问的服务 + 所有服务信息
+                if (tolerantStrategyKeys.equals(ErrorTolerantKeys.FAIL_OVER)) {
+                    respContext = new HashMap<>() {{
+                        put("rpcRequest", rpcRequest);
+                        put("visited", selectedServiceMetaInfo);
+                        put("serviceInfos", discoveryServiceMetaInfos);
+                        put("retryStrategy", retryStrategy);
+                        put("sender", sender);
+                    }};
+                }
+                failTolerantResp = tolerantStrategy.doTolerant(respContext, e);
+                if (failTolerantResp == null || failTolerantResp.getData() == null) {
+                    log.error("Tolerant strategy returned null for request: {}", rpcRequest);
+                    throw new RuntimeException("Tolerant strategy failed to provide a fallback result");
+                }
+                log.warn("Invok Fail Back Strategy for serviceInfos:{}", rpcRequest);
+                return failTolerantResp;
+            }
 
             //如果响应数据为空
             if (rpcResponse.getData() == null) {
@@ -134,15 +179,15 @@ public class ServiceProxy implements InvocationHandler {
                 //TODO: handle if data is empty
             }
 
-            //反序列化响应结果
+            //反序列化响应结果 - 基于 HTTP 反序列化
 //            rpcResponse = serializer.deserialize(result, RpcResponse.class);
 
-            //切换 - 基于 TCP 和 自定义协议 传输数据; 基于协议编码解码器
+            //优化，基于传输协议直接反编码得到结果
             return rpcResponse.getData();
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return null;
+        return rpcResponse;
     }
 
     /**

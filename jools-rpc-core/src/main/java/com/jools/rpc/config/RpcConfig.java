@@ -2,6 +2,8 @@ package com.jools.rpc.config;
 
 import com.jools.rpc.fault.retry.RetryStrategyFactory;
 import com.jools.rpc.fault.retry.RetryStrategyKeys;
+import com.jools.rpc.fault.tolerant.ErrorTolerantKeys;
+import com.jools.rpc.fault.tolerant.ErrorTolerantStrategy;
 import com.jools.rpc.loadbalancer.LoadBalancerKeys;
 import com.jools.rpc.registry.RegistryFactory;
 import com.jools.rpc.serializer.SerializerKeys;
@@ -63,6 +65,10 @@ public class RpcConfig {
     /**
      * 请求重试策略，默认不开启
      */
-    private String retryStrategyKey = RetryStrategyKeys.noRetry;
+    private String retryStrategyKey = RetryStrategyKeys.fixInterval;
 
+    /**
+     * 容错策略，默认快速失败
+     */
+    private String errorTolerantStrategyKeys = ErrorTolerantKeys.FAIL_FAST;
 }

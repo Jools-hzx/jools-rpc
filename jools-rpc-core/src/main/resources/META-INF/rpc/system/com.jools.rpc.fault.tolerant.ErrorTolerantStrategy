@@ -1,0 +1,4 @@
+fail-back=com.jools.rpc.fault.tolerant.FailBackTolerantStrategy
+fail-fast=com.jools.rpc.fault.tolerant.FailFastTolerantStrategy
+fail-over=com.jools.rpc.fault.tolerant.FailOverTolerantStrategy
+fail-safe=com.jools.rpc.fault.tolerant.FailSafeTolerantStrategy
