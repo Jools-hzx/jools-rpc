@@ -7,33 +7,59 @@
 ![Static Badge](https://img.shields.io/badge/Maven-3.8.1-C71A36?logo=apachemaven)
 ![Static Badge](https://img.shields.io/badge/Vert.x-4.3.3-green?logo=eclipsevert.x)
 ![Static Badge](https://img.shields.io/badge/Hutool-v5.8.10-blueviolet?logo=hu)
+![Static Badge](https://img.shields.io/badge/Guava-32.1.2-jellow?logo=google) 
+![Static Badge](https://img.shields.io/badge/Redis-blue?logo=redis) 
+![Static Badge](https://img.shields.io/badge/ZooKeeper-gream?logo=apachezookeeper) 
 
-
+## Introduction
 `JoolsRPC` is a lightweight RPC (Remote Procedure Call) framework implemented in Java, designed to simplify the process of remote service invocation. It provides an easy-to-use structure with a focus on flexibility, extensibility, and simplicity. This framework is ideal for learning purposes or for small-scale applications requiring lightweight RPC capabilities.
 
 ## ✨ Features
-
-- **Consumer Module**: `exp-consumer` module acts as the service consumer.
-- **Proxy Service**: Uses dynamic proxy (`UserService`) to allow consumers to call remote services.
-- **Request Client**: `BasicConsumerExample` sends requests before invoking `getUser()` using `HTTPRequest` from the Hutool library.
-- **Serialization/Deserialization**: Implemented via `JdkSerializer` to serialize and deserialize objects.
-- **Local Web Server**: Powered by `VertxHttpServer`, the web server is based on the Vert.x framework and synchronously registers services to a local service registry on startup.
-- **Request Handler**: `HttpServerHandler` processes incoming HTTP requests, queries the local registry, and uses reflection to invoke the appropriate methods.
-- **Local Service Registry**: `LocalRegistry` manages service registrations using a `Map`, where the key is the service name, and the value is the fully qualified class name.
-- **Provider**: Implements the `UserService` interface to provide services.
+- 🚀 Asynchronous Communication: Built with Vert.x for high-performance, non-blocking TCP communication, supporting serialization, transmission, and service registration.
+- 🔗 Transparent Service Invocation: Uses JDK dynamic proxies to enable seamless remote method calls without exposing communication details.
+- 📦 Serialization Options: Supports JDK, JSON, Kryo, Hessian, and Protobuf, with flexible SPI-based extension.
+- 🗂️ Registry: Supports Redis, Etcd, and ZooKeeper as service registry centers, with real-time node updates and caching.
+- ⚡ Custom RPC Protocol: Designed an efficient RPC protocol inspired by Dubbo, optimizing transmission and parsing.
+- ⚖️ Load Balancing: Includes algorithms like round-robin, random, consistent hashing, and weighted strategies.
+- 🔄 Retry Mechanism: Implements fixed interval, incremental wait, and exponential backoff retry strategies using Guava Retrying.
+- ⚙️ Global Configuration: Supports multi-environment configurations via Hutool and SnakeYAML.
+- 🎭 Mock Service: Generates mock proxy objects to return simulated data for testing purposes.
 
 ## 🖼️ Project Design 
-![Jools-RPC-1 0](https://github.com/user-attachments/assets/972a3402-5edb-4baf-979d-ebc41352fe6a)
+### 1. Latest Framework Structure
+<img src="https://github.com/user-attachments/assets/5bcde6ca-3abd-424a-ab5e-a60771048bfa" alt="Jools-RPC-5.0 [Add Retry Strategies]" width="70%">
 
+### 2. Simplify Key RPC Components
+<img src="https://github.com/user-attachments/assets/8c488da8-7998-4c3d-8051-acfbdef037d7" alt="Simplify basic RPC framework" width="70%">
+
+### 3. Key Functions of RPC Framework
+<img src="https://github.com/user-attachments/assets/a7339c2b-b037-4ffe-835b-e82eacb647a0" alt="Key Functions" width="70%">
+
+### 4. Customized Design Protocol Structure
+<img src="https://github.com/user-attachments/assets/f0faa1e5-90a4-4977-bbbb-36254abe5e24" alt="Protocol Message Design" width="70%">
+
+### 5. Decode and Encode for Customized Protocol
+<img src="https://github.com/user-attachments/assets/358f761a-7941-4312-ae88-13390b166d4f" alt="Decode and Encode Diagram" width="70%">
 
 ## 🛠️ Technology Stack
 
 - **Language**: Java
-- **JDK Version**: 8
+- **JDK Version**: 17
 - **Build Tool**: Maven
 - **Web Server**: Vert.x
 - **Libraries**:
   - **Hutool**: For handling HTTP requests (`HTTPRequest`).
+  - **Guava-Retrying**: For implementing retry mechanisms.
+  - **Jedis**: For interacting with Redis databases.
+  - **Mockito**: For mocking dependencies in unit tests.
+  - **Curator**: For Zookeeper-based service discovery.
+  - **Jetcd**: For interacting with Etcd as a distributed key-value store.
+  - **Protobuf**: For protocol buffer-based serialization.
+  - **SnakeYAML**: For parsing and working with YAML configuration files.
+  - **Jackson-Databind**: For JSON serialization and deserialization.
+  - **Hessian**: For RPC-based object serialization.
+  - **Kryo**: For high-performance object serialization.
+  - **JavaFaker**: For generating fake data in tests or mock scenarios.
 
 ## 📂 Project Structure
 
@@ -41,21 +67,12 @@
 jools-rpc/
 │
 ├── exp-consumer/               # Consumer module
-│   └── BasicConsumerExample.java   # Example of service consumption
 │
-├── provider/
-│   └── UserService.java            # Service interface
-│   └── UserServiceImpl.java        # Service implementation
+├── exp-provider/               # Provider module
 │
-├── registry/
-│   └── LocalRegistry.java          # Local service registry
+├── jools-rpc-core/             # Main module for Framework. Implement multi functions
 │
-├── server/
-│   └── VertxHttpServer.java        # Vert.x-based web server
-│   └── HttpServerHandler.java      # Custom request handler
-│
-├── serializer/
-│   └── JdkSerializer.java          # JDK-based serialization/deserialization
+├── jools-rpc-basic/            # Basic & simple framework just support local service register and discovert
 │
 └── pom.xml                         # Maven build file
 ```
@@ -135,27 +152,90 @@ public class BasicProviderExample {
 ## 📦 Dependencies
 
 ```xml
-<dependencies>
-    <!-- Vert.x Core -->
-    <dependency>
-        <groupId>io.vertx</groupId>
-        <artifactId>vertx-core</artifactId>
-        <version>4.3.3</version>
-    </dependency>
-
-    <!-- Hutool HTTP -->
-    <dependency>
-        <groupId>cn.hutool</groupId>
-        <artifactId>hutool-http</artifactId>
-        <version>5.8.10</version>
-    </dependency>
-
-    <!-- JUnit for testing -->
-    <dependency>
-        <groupId>junit</groupId>
-        <artifactId>junit</artifactId>
-        <version>4.13.2</version>
-        <scope>test</scope>
-    </dependency>
-</dependencies>
+<dependency>
+            <groupId>com.github.rholder</groupId>
+            <artifactId>guava-retrying</artifactId>
+            <version>2.0.0</version>
+        </dependency>
+        <!--        Redis -->
+        <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+            <version>4.3.1</version>
+        </dependency>
+        <!--        接口 Mock-->
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>3.12.4</version> <!-- 或者更高版本 -->
+            <scope>test</scope>
+        </dependency>
+        <!--        zookeeper-->
+        <dependency>
+            <groupId>org.apache.curator</groupId>
+            <artifactId>curator-x-discovery</artifactId>
+            <version>5.1.0</version>
+        </dependency>
+        <!-- Java - etcd 客户端-->
+        <dependency>
+            <groupId>io.etcd</groupId>
+            <artifactId>jetcd-core</artifactId>
+            <version>0.8.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+            <version>3.20.3</version>
+        </dependency>
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-core</artifactId>
+            <version>4.5.1</version>
+        </dependency>
+        <!--        Yaml配置类解析-->
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+            <version>2.2</version>
+        </dependency>
+        <!-- SLF4J API -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>2.0.7</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/ch.qos.logback/logback-classic -->
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.3.12</version>
+        </dependency>
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-all</artifactId>
+            <version>5.8.16</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.13.4</version>
+        </dependency>
+        <!-- 序列化 -->
+        <!-- https://mvnrepository.com/artifact/com.caucho/hessian -->
+        <dependency>
+            <groupId>com.caucho</groupId>
+            <artifactId>hessian</artifactId>
+            <version>4.0.66</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.esotericsoftware/kryo -->
+        <dependency>
+            <groupId>com.esotericsoftware</groupId>
+            <artifactId>kryo</artifactId>
+            <version>5.6.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.javafaker</groupId>
+            <artifactId>javafaker</artifactId>
+            <version>1.0.2</version>
+        </dependency>
 ```
