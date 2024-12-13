@@ -3,6 +3,7 @@ package com.jools.exp.consumer;
 import com.jools.exp.common.model.User;
 import com.jools.exp.common.service.UserService;
 import com.jools.exp.consumer.api.UserServiceMock;
+import com.jools.rpc.bootstrap.ConsumerBootstrap;
 import com.jools.rpc.fault.mock.LocalServiceMockRegistry;
 import com.jools.rpc.RpcApplication;
 import com.jools.rpc.config.RegistryConfig;
@@ -29,10 +30,16 @@ public class BasicConsumerExample {
 
     public static void main(String[] args) throws Exception {
 
-        //静态代理
-//        UserService service = new UserServiceStaticProxy();
+        //服务消费者初始化: 注册中心类型 + 序列化器类型等配置
+        ConsumerBootstrap.init();
 
-        //获取 - 动态代理
+        //查看配置 - 序列化器
+        log.info("Consumer Serializer type:{}", RpcApplication.getRpcConfig().getSerializer());
+
+        //查看配置 - 注册中心类型
+        log.info("Consumer Registry cli type:{}", RpcApplication.getRpcConfig().getRegistryConfig().getRegistryType());
+
+        //获取 - 动态代理对象，实现 RPC 透明调用
         UserService service = ServiceProxyFactory.getProxy(UserService.class);
 
         //RPC调用服务名
@@ -40,19 +47,6 @@ public class BasicConsumerExample {
 
         //优化 - 容错机制 Fail Back 本地伪装
         LocalServiceMockRegistry.register(serviceName, UserServiceMock.class);
-
-        /*
-          序列化器版本 2.0 - 支持多种序列化器，基于配置切换
-         */
-        Serializer instance = SerializerFactory.getInstance(RpcApplication.getRpcConfig().getSerializer());
-        log.info("Consumer Serializer type:{}", instance.getClass());
-
-        /*
-         版本 3.0 - 支持切换注册中心 [Etcd + ZooKeeper + Redis]
-         */
-        RegistryConfig registryConfig = RpcApplication.getRpcConfig().getRegistryConfig();
-        String registryType = registryConfig.getRegistryType();
-        log.info("Consumer Registry cli type:{}", registryType);
 
         User user = new User();
         user.setName("Jools Wakoo");
@@ -70,6 +64,7 @@ public class BasicConsumerExample {
                     String consumerErrorTolerantKey = RpcApplication.getRpcConfig().getErrorTolerantStrategyKeys();
                     log.warn("Consumer using {} strategy for Error tolerant", consumerErrorTolerantKey);
                     if (consumerErrorTolerantKey.equals(ErrorTolerantKeys.FAIL_BACK)) {
+                        //执行调用本地伪装服务
                         RpcRequest failBackRequest = FailBackMessageQueueFactory.getMessageQueue(ErrorTolerantKeys.FAIL_BACK).poll();
                         Class<?> cls = LocalServiceMockRegistry.getService(failBackRequest.getServiceName());
                         log.warn("Using Fail Back strategy for service:{}", failBackRequest.getServiceName());
