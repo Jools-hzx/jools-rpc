@@ -35,6 +35,7 @@ public class FailOverTolerantStrategy implements ErrorTolerantStrategy {
         for (ServiceMetaInfo serviceInfo : serviceInfos) {
             log.warn("Fail Over - select service:{}", serviceInfo.getServiceAddr());
             try {
+                //重试未访问服务节点
                 retry.doRetry(() -> {
                     return requestSender.convertAndSend(serviceInfo.getServiceAddr(), request);
                 });

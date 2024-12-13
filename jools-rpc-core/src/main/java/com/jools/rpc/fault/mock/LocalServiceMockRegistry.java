@@ -14,7 +14,7 @@ public class LocalServiceMockRegistry {
     /**
      * mock 本地服务注册存储结合
      */
-    private static final Map<String, Class<?>> LOCAL_MOCK_SERVICE_REGISTRY = new ConcurrentHashMap<>();
+    private static Map<String, Class<?>> mockServices = new ConcurrentHashMap<>();
 
     /**
      * 注册 mock 服务
@@ -24,7 +24,7 @@ public class LocalServiceMockRegistry {
             mockServiceName = "default";
         }
         try {
-            LOCAL_MOCK_SERVICE_REGISTRY.put(mockServiceName, serviceCls);
+            mockServices.put(mockServiceName, serviceCls);
         } catch (Exception e) {
             throw new RuntimeException("Error -" + e.getMessage());
         }
@@ -34,19 +34,19 @@ public class LocalServiceMockRegistry {
      * 获取 mock 服务
      */
     public static Class<?> getService(String mockServiceName) {
-        if (LOCAL_MOCK_SERVICE_REGISTRY.isEmpty()) {
+        if (mockServices.isEmpty()) {
             throw new RuntimeException("No service available");
         }
-        return LOCAL_MOCK_SERVICE_REGISTRY.get(mockServiceName);
+        return mockServices.get(mockServiceName);
     }
 
     /**
      * 删除 mock服务
      */
     public static void delete(String mockServiceName) {
-        if (LOCAL_MOCK_SERVICE_REGISTRY.isEmpty()) {
+        if (mockServices.isEmpty()) {
             throw new RuntimeException("No service available!");
         }
-        LOCAL_MOCK_SERVICE_REGISTRY.remove(mockServiceName);
+        mockServices.remove(mockServiceName);
     }
 }

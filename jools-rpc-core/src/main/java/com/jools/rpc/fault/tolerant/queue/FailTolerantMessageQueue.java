@@ -12,11 +12,32 @@ import java.util.List;
  */
 public interface FailTolerantMessageQueue {
 
+    /**
+     * 取消息
+     *
+     * @return
+     */
     RpcRequest poll();
 
+    /**
+     * 推送消息
+     *
+     * @param request
+     * @return
+     */
     boolean offer(RpcRequest request);
 
+    /**
+     * 队列为空
+     *
+     * @return
+     */
     boolean isEmpty();
 
+    /**
+     * 获取所有消息
+     *
+     * @return
+     */
     List<RpcRequest> listAll();
 }

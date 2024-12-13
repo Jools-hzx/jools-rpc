@@ -22,7 +22,6 @@ public class FailBackMessageQueueFactory {
         queueMap.put(ErrorTolerantKeys.FAIL_BACK, FailBackMessageQueue.getInstance());
     }
 
-
     public static FailTolerantMessageQueue getMessageQueue(String errorTolerantKey) {
         if (StringUtils.isBlank(errorTolerantKey)) {
             throw new RuntimeException("Empty error tolerant key" + errorTolerantKey);

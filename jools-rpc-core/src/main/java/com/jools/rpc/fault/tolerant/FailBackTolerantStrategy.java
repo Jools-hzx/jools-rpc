@@ -12,7 +12,7 @@ import java.util.Map;
  * @author Jools He
  * @version 1.0
  * @date 2024/12/11 10:56
- * @description: 容错 —— 故障恢复(降级 + 限流)
+ * @description: 容错 —— 故障恢复(本地伪装)
  */
 
 @Slf4j

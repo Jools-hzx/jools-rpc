@@ -53,7 +53,8 @@ public class ProviderExample2 {
         serviceMetaInfo.setServiceName(serviceName);
         serviceMetaInfo.setServiceHost(rpcConfig.getServerHost());
         serviceMetaInfo.setServicePort(10000);
-        serviceMetaInfo.setServiceWeight(ServiceWeight.ONE);   //默认 0
+        //默认权重 1
+        serviceMetaInfo.setServiceWeight(ServiceWeight.ONE);
         serviceMetaInfo.setCurrentWeight(serviceMetaInfo.getServiceWeight());
         serviceMetaInfo.setStartTime(DateUtils.formatLocalTimeDate(LocalDateTime.now()));
 
