@@ -6,6 +6,8 @@
       <list>
         <option value="$PROJECT_DIR$/pom.xml" />
         <option value="$PROJECT_DIR$/jools-spring-boot-starter/pom.xml" />
+        <option value="$PROJECT_DIR$/example-springboot-consumer/pom.xml" />
+        <option value="$PROJECT_DIR$/example-springboot-provider/pom.xml" />
       </list>
     </option>
   </component>

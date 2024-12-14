@@ -2,6 +2,8 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/example-springboot-consumer" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/example-springboot-provider" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/jools-spring-boot-starter" vcs="Git" />
   </component>
 </project>
