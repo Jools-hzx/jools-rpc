@@ -62,14 +62,19 @@ public class RedisRegistry implements Registry {
     private final Set<String> watchServiceKeySet = new ConcurrentHashSet<>();
 
     /**
-     * 监听策略
+     * 监控策略
      */
     private WatchStrategy watchStrategy;
 
     /**
-     * 是否已经启动监听机制 - 默认 false
+     * 是否已启动心跳检测 - 默认 false
      */
-    private boolean isHeartBeatScheduled = false;
+    private static boolean isHeartBeatScheduled = false;
+
+    /**
+     * 关闭心跳检测
+     */
+    private final Object lock = new Object();
 
     public void setWatchStrategy(WatchStrategy watchStrategy) {
         this.watchStrategy = watchStrategy;
@@ -94,7 +99,7 @@ public class RedisRegistry implements Registry {
         }
 
         //启动监听
-        heartBeat();
+        this.heartBeat();
 
         //设置监听策略 - Redis
         if (ObjectUtil.isNull(watchStrategy)) {
@@ -115,7 +120,11 @@ public class RedisRegistry implements Registry {
             return;
         }
 
-        isHeartBeatScheduled = true;
+        //无需要心跳检测的服务节点
+        if (this.localRegisterNodeKeySet.isEmpty()) {
+            return;
+        }
+
         //10s 续签一次
         CronUtil.schedule("*/10 * * * * *", new Task() {
             @Override
@@ -153,7 +162,11 @@ public class RedisRegistry implements Registry {
             }
          */
         CronUtil.setMatchSecond(true);
-        CronUtil.start();
+        // 仅在未启动时启动调度器
+        if (!CronUtil.getScheduler().isStarted()) {
+            CronUtil.start();
+            this.isHeartBeatScheduled = true;
+        }
     }
 
     @Override
@@ -172,7 +185,7 @@ public class RedisRegistry implements Registry {
         String key = REDIS_ROOT_HEADER + serviceMetaInfo.getServiceNodeKey();
         try {
             //注册时间
-            serviceMetaInfo.setRegisterTime(DateUtils.formatLocalTimeDate(LocalDateTime.now()));
+            setRegistryTimeDate(serviceMetaInfo);
             //设置过期时间为 30s
             jedis.setex(key, 30L, JSONUtil.toJsonStr(serviceMetaInfo));
         } catch (Exception e) {
@@ -274,7 +287,13 @@ public class RedisRegistry implements Registry {
             }
         }
 
-        // 停止心跳定时任务
-        CronUtil.stop();
+        // 停止心跳检测
+        if (CronUtil.getScheduler().isStarted()) {
+            synchronized (lock) {
+                if (CronUtil.getScheduler().isStarted()) { // 双重检查
+                    CronUtil.stop();
+                }
+            }
+        }
     }
 }

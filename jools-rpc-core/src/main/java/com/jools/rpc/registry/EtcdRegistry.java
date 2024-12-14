@@ -15,6 +15,7 @@ import io.etcd.jetcd.options.DeleteOption;
 import io.etcd.jetcd.options.GetOption;
 import io.etcd.jetcd.options.PutOption;
 import io.etcd.jetcd.watch.WatchEvent;
+import io.grpc.StatusRuntimeException;
 import io.vertx.core.impl.ConcurrentHashSet;
 import lombok.extern.slf4j.Slf4j;
 
@@ -63,9 +64,20 @@ public class EtcdRegistry implements Registry {
      */
     private final Set<String> watchServiceKeySet = new ConcurrentHashSet<>();
 
+    /**
+     * 监控策略
+     */
     private WatchStrategy watchStrategy;
 
-    private boolean isHeartBeatScheduled = false;
+    /**
+     * 是否已启动心跳检测 - 默认 false
+     */
+    private static boolean isHeartBeatScheduled = false;
+
+    /**
+     * 关闭心跳检测
+     */
+    private final Object lock = new Object();
 
     public void setWatchStrategy(WatchStrategy watchStrategy) {
         this.watchStrategy = watchStrategy;
@@ -125,6 +137,11 @@ public class EtcdRegistry implements Registry {
             return;
         }
 
+        //无需要心跳检测的服务节点
+        if (this.localRegisterNodeKeySet.isEmpty()) {
+            return;
+        }
+
         //10s 续签一次
         CronUtil.schedule("*/10 * * * * *", new Task() {
             @Override
@@ -153,8 +170,13 @@ public class EtcdRegistry implements Registry {
                         //续约
                         registry(serviceMetaInfo);
 
+                    } catch (StatusRuntimeException e) {
+                        // 仅忽略 INTERNAL 错误码的异常，其他异常仍需处理
+                        if (e.getStatus().getCode() == io.grpc.Status.Code.INTERNAL) {
+                            log.warn("Ignored INTERNAL error during service node renewal for {}: {}", nodeKey, e.getMessage());
+                        }
                     } catch (Exception e) {
-                        throw new RuntimeException("Service renewal fail! --- Service key node:" + nodeKey);
+                        log.error("Error occurred during service node renewal for {}: {}", nodeKey, e.getMessage());
                     }
                 }
             }
@@ -167,7 +189,11 @@ public class EtcdRegistry implements Registry {
             }
          */
         CronUtil.setMatchSecond(true);
-        CronUtil.start();
+        // 仅在未启动时启动调度器
+        if (!CronUtil.getScheduler().isStarted()) {
+            CronUtil.start();
+            this.isHeartBeatScheduled = true;
+        }
     }
 
     @Override
@@ -312,7 +338,13 @@ public class EtcdRegistry implements Registry {
             this.client.close();
         }
 
-        //停止心跳检测
-        CronUtil.stop();
+        // 停止心跳检测
+        if (CronUtil.getScheduler().isStarted()) {
+            synchronized (lock) {
+                if (CronUtil.getScheduler().isStarted()) { // 双重检查
+                    CronUtil.stop();
+                }
+            }
+        }
     }
 }

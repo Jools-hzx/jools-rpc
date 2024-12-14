@@ -22,10 +22,12 @@ public class RpcApplication {
 
     private static volatile RpcConfig rpcConfig;
 
-
-    public static void init(RpcConfig newConfig) {
-        rpcConfig = newConfig;
-        log.info("Rpc Config init succeed!, config = {}", newConfig);
+    //启动服务注册中心 - 心跳检测
+    public static void initRegistry(RpcConfig newConfig) {
+        if (rpcConfig == null) {
+            rpcConfig = newConfig;
+            log.info("Rpc Config init succeed!, config = {}", newConfig);
+        }
 
         //通过 RpcConfig 获取 RegistryConfig
         RegistryConfig registryConfig = rpcConfig.getRegistryConfig();
@@ -55,7 +57,7 @@ public class RpcApplication {
             newRpcConfig = new RpcConfig();
         }
         //赋值
-        init(newRpcConfig);
+        initRegistry(newRpcConfig);
     }
 
     /**
@@ -79,7 +81,7 @@ public class RpcApplication {
         for (String s : ymlSuffixes) {
             if (suffix.equals(s)) {
                 RpcConfig ymlRpcConfig = ConfigUtils.loadConfigYaml(RpcConfig.class, s);
-                init(ymlRpcConfig);
+                initRegistry(ymlRpcConfig);
                 return;
             }
         }
