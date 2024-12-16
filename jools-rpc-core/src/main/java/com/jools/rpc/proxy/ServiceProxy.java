@@ -169,7 +169,7 @@ public class ServiceProxy implements InvocationHandler {
                     log.error("Tolerant strategy returned null for request: {}", rpcRequest);
                     throw new RuntimeException("Tolerant strategy failed to provide a fallback result");
                 }
-                log.warn("Invok Fail Back Strategy for serviceInfos:{}", rpcRequest);
+                log.warn("Invoke Fail Back Strategy for serviceInfos:{}", rpcRequest);
                 return failTolerantResp;
             }
 

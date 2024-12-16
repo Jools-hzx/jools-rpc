@@ -66,6 +66,8 @@ public class ProviderBootstrap {
 
             //完成注册 - 默认为: 为 com.jools.exp.common.service.UserService:1.0/localhost:8888
             registry.registry(serviceMetaInfo);
+            //启动注册中心监听+心跳
+            RpcApplication.initRegistry(rpcConfig);
         }
         VertxTcpServer vertxTcpServer = new VertxTcpServer();
         vertxTcpServer.doStart(8888);

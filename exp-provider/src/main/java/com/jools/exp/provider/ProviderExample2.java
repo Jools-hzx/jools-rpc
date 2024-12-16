@@ -62,6 +62,8 @@ public class ProviderExample2 {
         serviceMetaInfo.setMetadata(new HashMap<>());
 
         registry.registry(serviceMetaInfo);
+        //启动注册中心监听+心跳
+        RpcApplication.initRegistry(rpcConfig);
 
         //和注册服务端口一致，处理负载均衡转发的请求(基于 TCP)
         VertxTcpServer vertxTcpServer = new VertxTcpServer();
