@@ -1,4 +1,4 @@
-name: Jools rpc 1
-version: 2.0
-serverHost: localHost
-serverPort: 8888
+name: Jools rpc 3
+version: 3.0
+serverHost: 127.0.0.1
+serverPort: 11111

@@ -43,7 +43,7 @@ public class RpcConfig {
     private String serverPort = "8888";
 
     /**
-     * 模拟调用
+     * 开启模拟调用供测试
      */
     private boolean mock = false;
 
