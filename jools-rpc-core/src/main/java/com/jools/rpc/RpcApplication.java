@@ -1,5 +1,6 @@
 package com.jools.rpc;
 
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.jools.rpc.config.RegistryConfig;
 import com.jools.rpc.config.RpcConfig;
@@ -21,6 +22,19 @@ import java.io.FileNotFoundException;
 public class RpcApplication {
 
     private static volatile RpcConfig rpcConfig;
+
+    //是否需要启动 RPC 框架服务器
+    public static volatile boolean needServer;
+
+    public static void setRpcConfig(RpcConfig newRpcConfig) {
+        if (rpcConfig == null) {
+            synchronized (RpcConfig.class) {
+                if (rpcConfig == null) {
+                    rpcConfig = newRpcConfig;
+                }
+            }
+        }
+    }
 
     //启动服务注册中心 - 心跳检测
     public static void initRegistry(RpcConfig newConfig) {
@@ -56,7 +70,6 @@ public class RpcApplication {
             //加载失败的话，启用默认配置
             newRpcConfig = new RpcConfig();
         }
-        //赋值
         initRegistry(newRpcConfig);
     }
 
@@ -81,7 +94,7 @@ public class RpcApplication {
         for (String s : ymlSuffixes) {
             if (suffix.equals(s)) {
                 RpcConfig ymlRpcConfig = ConfigUtils.loadConfigYaml(RpcConfig.class, s);
-                initRegistry(ymlRpcConfig);
+                setRpcConfig(ymlRpcConfig);
                 return;
             }
         }

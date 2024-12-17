@@ -7,6 +7,7 @@ import cn.hutool.cron.CronUtil;
 import cn.hutool.cron.task.Task;
 import cn.hutool.json.JSONUtil;
 import cn.hutool.log.Log;
+import com.jools.rpc.RpcApplication;
 import com.jools.rpc.config.RegistryConfig;
 import com.jools.rpc.model.ServiceMetaInfo;
 import com.jools.rpc.registry.strategy.RedisStrategy;
@@ -98,8 +99,10 @@ public class RedisRegistry implements Registry {
             jedis.auth(registryConfig.getPassword());
         }
 
-        //启动监听
-        this.heartBeat();
+        //启动心跳检测机制
+        if (RpcApplication.needServer) {
+            this.heartBeat();
+        }
 
         //设置监听策略 - Redis
         if (ObjectUtil.isNull(watchStrategy)) {

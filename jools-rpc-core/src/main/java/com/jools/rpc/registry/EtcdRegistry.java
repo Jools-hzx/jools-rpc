@@ -5,7 +5,9 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.cron.CronUtil;
 import cn.hutool.cron.task.Task;
 import cn.hutool.json.JSONUtil;
+import com.jools.rpc.RpcApplication;
 import com.jools.rpc.config.RegistryConfig;
+import com.jools.rpc.config.RpcConfig;
 import com.jools.rpc.model.ServiceMetaInfo;
 import com.jools.rpc.registry.strategy.EtcdWatchStrategy;
 import com.jools.rpc.registry.strategy.WatchStrategy;
@@ -95,7 +97,9 @@ public class EtcdRegistry implements Registry {
         this.kvClient = this.client.getKVClient();
 
         //启动心跳检测机制
-        this.heartBeat();
+        if (RpcApplication.needServer) {
+            this.heartBeat();
+        }
 
         //设置监听策略 - Etcd
         if (ObjectUtil.isNull(watchStrategy)) {
