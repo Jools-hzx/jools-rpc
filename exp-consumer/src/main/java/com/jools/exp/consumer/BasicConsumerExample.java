@@ -82,7 +82,6 @@ public class BasicConsumerExample {
                     Class<?> cls;
                     try {
                         cls = Class.forName(clsName);
-                        //TODO: If instance implement multi interfaces
                         Class<?>[] interfaces = cls.getInterfaces();
                         //默认以第一个实现的接口名注册
                         String serviceName = interfaces[0].getName();
