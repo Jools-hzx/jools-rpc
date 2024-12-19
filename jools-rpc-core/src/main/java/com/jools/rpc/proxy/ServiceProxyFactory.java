@@ -28,6 +28,13 @@ public class ServiceProxyFactory {
         );
     }
 
+    public static <T> T getProviderMockProxy(Class<T> serviceClass, boolean isMock) {
+        if (isMock) {
+            return getMockProxy(serviceClass);
+        }
+        throw new RuntimeException("Mock function no supported!");
+    }
+
     /**
      * 根据服务类接口返回代理对象
      *
