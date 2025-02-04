@@ -1,6 +1,7 @@
 package com.jools.rpc.proxy.sender;
 
 import com.jools.rpc.model.registryInfo.Protocol;
+import com.jools.rpc.spi.SpiLoader;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
@@ -14,20 +15,17 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public class RequestSenderFactory {
 
-    private static ConcurrentHashMap<String, RequestSender> senders = new ConcurrentHashMap<>();
-
+    /**
+     * 基于自定义 SPI 资源路径加载所有 RequestSender 配置
+     * 配置格式: key=RequeSender实现类全类名
+     */
     static {
-        senders.put(Protocol.HTTP, new HttpRequestSender());
-        senders.put(Protocol.TCP, new TcpRequestSender());
+        SpiLoader.load(RequestSender.class);
     }
 
+    public static final RequestSender DEFAULT_REQUEST_SENDER = new TcpRequestSender();
+
     public static RequestSender getSender(String protocol) {
-        if (Protocol.HTTP.equals(protocol)) {
-            return senders.get(Protocol.HTTP);
-        } else if (Protocol.TCP.equals(protocol)) {
-            return senders.get(Protocol.TCP);
-        }
-        log.error("Not Protocol type match", protocol);
-        throw new RuntimeException("Not Protocol type match" + protocol);
+        return SpiLoader.getInstance(RequestSender.class, protocol);
     }
 }

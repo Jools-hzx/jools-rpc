@@ -102,7 +102,7 @@ public class SpiLoader {
 
         //检查 loaderMap 内该 tClass 是否存在
         if (!keyClassMap.containsKey(key)) {
-            throw new RuntimeException(String.format("Class:{} doesn't have key:{%s} impl instance", name, key));
+            throw new RuntimeException(String.format("Class:{%s} doesn't have key:{%s} impl instance", name, key));
         }
 
         //基于 key 获取要加载的实例类 Class

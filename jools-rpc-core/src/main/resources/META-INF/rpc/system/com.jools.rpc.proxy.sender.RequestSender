@@ -1,0 +1,2 @@
+tcp=com.jools.rpc.proxy.sender.TcpRequestSender
+http=com.jools.rpc.proxy.sender.HttpRequestSender
