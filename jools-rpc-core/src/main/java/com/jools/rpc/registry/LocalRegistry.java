@@ -18,17 +18,17 @@ public class LocalRegistry {
     /**
      * 注册信息存储类
      */
-    private static final Map<String, Class<?>> registry = new ConcurrentHashMap<>();
+    private static final Map<String, Object> registry = new ConcurrentHashMap<>();
 
     /**
      * 注册服务
      */
-    public static void register(String serviceName, Class<?> serviceCls) {
+    public static void register(String serviceName, Object instance) {
         if (serviceName == null || serviceName.isEmpty()) {
             serviceName = "default";
         }
         try {
-            registry.put(serviceName, serviceCls);
+            registry.put(serviceName, instance);
         } catch (Exception e) {
             throw new RuntimeException("Error -" + e.getMessage());
         }
@@ -37,7 +37,7 @@ public class LocalRegistry {
     /**
      * 获取服务
      */
-    public static Class<?> getService(String serviceName) {
+    public static Object getService(String serviceName) {
         if (registry.isEmpty()) {
             throw new RuntimeException("No service available");
         }

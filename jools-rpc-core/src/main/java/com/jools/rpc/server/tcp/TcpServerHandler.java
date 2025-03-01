@@ -50,14 +50,13 @@ public class TcpServerHandler implements Handler<NetSocket> {
 
             //反射调用
             Object result;
-            Class<?> cls = null;
+            Object serviceInstance;
             RpcResponse rpcResponse = new RpcResponse();
             try {
                 //查询本地注册服务，反射调用
-                cls = LocalRegistry.getService(serviceName);
-                Method method = cls.getDeclaredMethod(methodName, paramTypes);
-                Object instance = cls.getDeclaredConstructor().newInstance();
-                result = method.invoke(instance, params);
+                serviceInstance = LocalRegistry.getService(serviceName);
+                Method method = serviceInstance.getClass().getDeclaredMethod(methodName, paramTypes);
+                result = method.invoke(serviceInstance, params);
 
                 //构建 RpcResponse - 成功
                 //优化，基于 State 枚举类的内容
@@ -65,7 +64,7 @@ public class TcpServerHandler implements Handler<NetSocket> {
                 rpcResponse.setDataType(method.getReturnType());
                 rpcResponse.setData(result);
             } catch (Exception e) {
-                log.error("Error when reflecting instance:{}", cls.getSimpleName());
+                log.error("Error when reflecting service instance for rpc request service:{}", rpcRequest.getServiceName());
                 //构建 RcpResponse - 失败
                 //优化，基于 State 枚举类内容
                 rpcResponse.setMsg(ProtocolMessageStateEnum.RESPONSE_FAIL.getText());

@@ -57,21 +57,23 @@ public class HttpServerHandler implements Handler<HttpServerRequest> {
 
             try {
                 //获取调用到的服务实现类
-                Class<?> service = LocalRegistry.getService(rpcRequest.getServiceName());
-                //通过反射调用方法，返回方法结果
-                Method declaredMethod = service.getMethod(rpcRequest.getMethodName(), rpcRequest.getParamTypes());
-
+                String serviceName = rpcRequest.getServiceName();
+                Object instance = LocalRegistry.getService(serviceName);
+                if (instance == null) {
+                    throw new RuntimeException("Service instance not found: " + serviceName);
+                }
+                Method method = instance.getClass().getDeclaredMethod(rpcRequest.getMethodName(), rpcRequest.getParamTypes());
                 log.info("Invoke service name:{}, method name:{}", rpcRequest.getServiceName(), rpcRequest.getMethodName());
 
-                Object methodResult = declaredMethod.invoke(
+                Object methodResult = method.invoke(
                         //JDK 9 之后不推荐 直接 newInstance()
-                        service.getDeclaredConstructor().newInstance(),
+                        instance,
                         rpcRequest.getParams()
                 );
 
                 //封装数据到返回
                 rpcResponse.setData(methodResult);
-                rpcResponse.setDataType(declaredMethod.getReturnType());
+                rpcResponse.setDataType(method.getReturnType());
                 rpcResponse.setMsg("OK - 2xx");
             } catch (Exception e) {
                 //输出异常
