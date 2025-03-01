@@ -27,6 +27,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 
 /**
@@ -116,7 +118,7 @@ public class BasicConsumerExample {
                     serviceName = rpcFailBack.serviceName();
                 }
                 //若开启本地Mock, 必须注册
-                List<Class<?>> localMockServices = LocalServiceMockRegistry.getService(serviceName);
+                Class<?> localMockServices = LocalServiceMockRegistry.getService(serviceName);
                 if (ObjectUtil.isNull(localMockServices) || ObjectUtil.isEmpty(localMockServices)) {
                     throw new RuntimeException("No local service register for service name:" + serviceName);
                 }
@@ -167,7 +169,7 @@ public class BasicConsumerExample {
                     if (consumerErrorTolerantKey.equals(ErrorTolerantKeys.FAIL_BACK)) {
                         //执行调用本地伪装服务
                         RpcRequest failBackRequest = FailBackMessageQueueFactory.getMessageQueue(ErrorTolerantKeys.FAIL_BACK).poll();
-                        Class<?> cls = LocalServiceMockRegistry.getService(failBackRequest.getServiceName()).get(0);
+                        Class<?> cls = LocalServiceMockRegistry.getService(failBackRequest.getServiceName());
                         log.warn("Using Fail Back strategy for service:{}", failBackRequest.getServiceName());
                         Object obj = cls.getDeclaredConstructor().newInstance();
                         Method method = cls.getDeclaredMethod(failBackRequest.getMethodName(), failBackRequest.getParamTypes());
