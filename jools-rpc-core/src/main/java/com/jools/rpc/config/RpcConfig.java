@@ -71,4 +71,9 @@ public class RpcConfig {
      * 容错策略，默认快速失败
      */
     private String errorTolerantStrategyKeys = ErrorTolerantKeys.FAIL_FAST;
+
+    /**
+     * 是否启用自动登录
+     */
+    private boolean autoLogin = true;
 }

@@ -50,4 +50,6 @@ public class RpcRequest implements Serializable {
      * 默认请求的服务版本号
      */
     private String serviceVersion = RpcConstant.DEFAULT_SERVICE_VERSION;
+
+    private boolean needLogin = true;
 }

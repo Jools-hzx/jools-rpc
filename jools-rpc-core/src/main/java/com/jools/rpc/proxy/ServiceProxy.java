@@ -23,12 +23,15 @@ import com.jools.rpc.model.ServiceMetaInfo;
 import com.jools.rpc.proxy.sender.RequestSender;
 import com.jools.rpc.proxy.sender.RequestSenderFactory;
 import com.jools.rpc.proxy.cache.ConsumerServiceCache;
+import com.jools.rpc.proxy.valid.LoginValidator;
+import com.jools.rpc.proxy.valid.NeedLoginException;
 import com.jools.rpc.registry.Registry;
 import com.jools.rpc.registry.RegistryFactory;
 import com.jools.rpc.serializer.Serializer;
 import com.jools.rpc.serializer.impl.JdkSerializer;
 import lombok.extern.slf4j.Slf4j;
 
+import javax.security.auth.login.LoginException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -40,7 +43,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 /**
  * @author Jools He
  * @version 1.0
- * @date 2024/10/30 11:46
  * @description: 基于 JDK 动态代理服务
  */
 @Slf4j
@@ -61,7 +63,25 @@ public class ServiceProxy implements InvocationHandler {
                 .paramTypes(method.getParameterTypes())
                 .params(args)
                 .serviceVersion(RpcConstant.DEFAULT_SERVICE_VERSION)
+                .needLogin(true)
                 .build();
+
+        // 启用自动登录
+        if (RpcApplication.getRpcConfig().isAutoLogin()) {
+            rpcRequest.setNeedLogin(false);
+        }
+
+        // 拒绝未登录请求
+        if (!LoginValidator.validate(rpcRequest)) {
+            log.info("Login required, please login first");
+            NeedLoginException loginException = new NeedLoginException("Need Login!");
+            return RpcResponse.builder()
+                    .exception(loginException)
+                    .dataType(LoginException.class)
+                    .data(loginException)
+                    .msg("Need Login!")
+                    .build().getData();
+        }
 
         //构造请求参数 - 用于负载均衡
         Map<String, Object> requestParams = getRequestParams(method);
