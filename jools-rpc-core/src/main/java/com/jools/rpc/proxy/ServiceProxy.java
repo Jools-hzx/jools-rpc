@@ -115,7 +115,7 @@ public class ServiceProxy implements InvocationHandler {
             //构建 ServiceMetaInfo 信息
             ServiceMetaInfo serviceMetaInfo = new ServiceMetaInfo();
             serviceMetaInfo.setServiceName(serviceName);
-            serviceMetaInfo.setServiceVersion(RpcConstant.DEFAULT_SERVICE_VERSION);
+            serviceMetaInfo.setServiceVersion(rpcConfig.getVersion());
             log.debug("Consumer request RPC service name:{}", serviceName);
 
             //基于 ServiceMetaInfo 内的 ServiceKey 查询所有服务节点
