@@ -1,5 +1,6 @@
 package com.jools.rpc.config;
 
+import com.jools.rpc.constant.RpcConstant;
 import com.jools.rpc.fault.retry.RetryStrategyFactory;
 import com.jools.rpc.fault.retry.RetryStrategyKeys;
 import com.jools.rpc.fault.tolerant.ErrorTolerantKeys;
@@ -76,4 +77,9 @@ public class RpcConfig {
      * 是否启用自动登录
      */
     private boolean autoLogin = true;
+
+    /**
+     * 等待一次 RPC 响应的时间，单位：秒
+     */
+    private int rpcRespWaitDuration = RpcConstant.DEFAULT_RESP_WAIT_DURATION;
 }

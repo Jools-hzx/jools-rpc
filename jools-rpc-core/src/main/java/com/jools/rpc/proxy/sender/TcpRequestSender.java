@@ -20,7 +20,6 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author Jools He
  * @version 1.0
- * @date 2024/11/28 11:15
  * @description: 请求协议 - TCP
  * 作用:
  * RpcRequest 携带自定义消息头被封装为 ProtocolMessage 编码成 Buffer 发送;
@@ -29,6 +28,8 @@ import java.util.concurrent.TimeUnit;
  */
 @Slf4j
 public class TcpRequestSender implements RequestSender {
+
+    private static final int RPC_RESP_WAIT_DURATION = RpcApplication.getRpcConfig().getRpcRespWaitDuration();
 
     @Override
     public RpcResponse convertAndSend(String serviceAddr, RpcRequest rpcRequest) {
@@ -93,7 +94,7 @@ public class TcpRequestSender implements RequestSender {
             });
 
             //阻塞直到获取到响应; 超过 10 s 则超时
-            rpcResponse = responseFuture.get(10, TimeUnit.SECONDS);
+            rpcResponse = responseFuture.get(RPC_RESP_WAIT_DURATION, TimeUnit.SECONDS);
 
         } catch (Exception e) {
             log.error(e.getMessage());

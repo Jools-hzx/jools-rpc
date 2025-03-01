@@ -22,6 +22,8 @@ import java.io.IOException;
 @Slf4j
 public class HttpRequestSender implements RequestSender {
 
+    private static final int RPC_RESP_WAIT_DURATION = RpcApplication.getRpcConfig().getRpcRespWaitDuration();
+
     @Override
     public RpcResponse convertAndSend(String serviceAddr, RpcRequest request) throws IOException {
         Serializer serializer = SerializerFactory.getInstance(RpcApplication.getRpcConfig().getSerializer());

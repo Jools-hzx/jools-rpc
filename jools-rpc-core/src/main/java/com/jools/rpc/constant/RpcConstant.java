@@ -18,7 +18,18 @@ public interface RpcConstant {
      */
     String DEFAULT_SERVICE_VERSION = "1.0";
 
+    /**
+     * properties 配置文件后缀
+     */
     String PROP_CONFIG_SUFFIX = ".properties";
 
+    /**
+     * yaml 配置文件后缀
+     */
     String YAML_CONFIG_SUFFIX = ".yaml;.yml";
+
+    /**
+     * 默认RPC响应等待时间，单位：秒
+     */
+    int DEFAULT_RESP_WAIT_DURATION = 10;
 }
