@@ -1,0 +1,2 @@
+invalidServiceName=com.jools.rpc.interceptor.InvalidServiceNameInterceptor
+illegalParameter=com.jools.rpc.interceptor.IllegalParamInterceptor

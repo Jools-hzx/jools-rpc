@@ -2,12 +2,18 @@ package com.jools.rpc.spi;
 
 import cn.hutool.core.io.resource.ResourceUtil;
 import cn.hutool.core.util.StrUtil;
+import com.jools.rpc.fault.retry.RetryStrategy;
+import com.jools.rpc.fault.tolerant.ErrorTolerantStrategy;
+import com.jools.rpc.loadbalancer.LoadBalancer;
+import com.jools.rpc.proxy.sender.RequestSender;
 import com.jools.rpc.serializer.Serializer;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,7 +52,8 @@ public class SpiLoader {
     /**
      * 动态加载类列表
      */
-    private static final List<Class<?>> loadClassesList = List.of(Serializer.class);
+    private static final List<Class<?>> LOADED_CLASSES_LIST = List.of(Serializer.class, ErrorTolerantStrategy.class,
+            RetryStrategy.class, LoadBalancer.class, RequestSender.class);
 
     /**
      * SPI读取目录顺序，默认目录优先，其次是自定义目录
@@ -70,6 +77,15 @@ public class SpiLoader {
             }
         }
         return spiLoaderInstance;
+    }
+
+    public static <T> List<T> getAllInstance(Class<T> tClass) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        Map<String, Class<?>> classMap = loaderMap.get(tClass.getName());
+        List<T> instanceList = new ArrayList<>();
+        for (Class<?> cls : classMap.values()) {
+            instanceList.add((T) cls.getDeclaredConstructor().newInstance());
+        }
+        return instanceList;
     }
 
     /**
@@ -180,7 +196,7 @@ public class SpiLoader {
      */
     public static void loadAll() {
         log.info("利用 SPI 加载所有类型");
-        for (Class<?> cls : loadClassesList) {
+        for (Class<?> cls : LOADED_CLASSES_LIST) {
             load(cls);
         }
     }

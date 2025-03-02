@@ -5,6 +5,7 @@ import com.jools.rpc.fault.retry.RetryStrategyFactory;
 import com.jools.rpc.fault.retry.RetryStrategyKeys;
 import com.jools.rpc.fault.tolerant.ErrorTolerantKeys;
 import com.jools.rpc.fault.tolerant.ErrorTolerantStrategy;
+import com.jools.rpc.interceptor.InterceptorKeys;
 import com.jools.rpc.loadbalancer.LoadBalancerKeys;
 import com.jools.rpc.registry.RegistryFactory;
 import com.jools.rpc.serializer.SerializerKeys;
@@ -82,4 +83,9 @@ public class RpcConfig {
      * 等待一次 RPC 响应的时间，单位：秒
      */
     private int rpcRespWaitDuration = RpcConstant.DEFAULT_RESP_WAIT_DURATION;
+
+    /**
+     * 拦截器配置, 默认开启所有拦截器
+     */
+    private boolean enableInterceptor = InterceptorKeys.ENABLE_ALL_INTERCEPTOR;
 }

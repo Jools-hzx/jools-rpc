@@ -1,12 +1,16 @@
 package com.jools.rpc.server.tcp;
 
 import com.jools.rpc.RpcApplication;
+import com.jools.rpc.interceptor.InterceptorFactory;
+import com.jools.rpc.interceptor.InterceptorKeys;
+import com.jools.rpc.interceptor.RpcHandlerInterceptor;
 import com.jools.rpc.model.RpcRequest;
 import com.jools.rpc.model.RpcResponse;
 import com.jools.rpc.protocol.*;
 import com.jools.rpc.registry.LocalRegistry;
 import com.jools.rpc.serializer.Serializer;
 import com.jools.rpc.serializer.SerializerFactory;
+import com.jools.rpc.spi.SpiLoader;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerRequest;
@@ -18,6 +22,8 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Jools He
@@ -27,6 +33,20 @@ import java.lang.reflect.Method;
 
 @Slf4j
 public class TcpServerHandler implements Handler<NetSocket> {
+
+    private final List<RpcHandlerInterceptor> INTERCEPTOR_LIST = initInterceptor();
+
+    private List<RpcHandlerInterceptor> initInterceptor() {
+        List<RpcHandlerInterceptor> interceptors = new ArrayList<>();
+        if (RpcApplication.getRpcConfig().isEnableInterceptor()) {
+            try {
+                return SpiLoader.getAllInstance(RpcHandlerInterceptor.class);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return interceptors;
+    }
 
     @Override
     public void handle(NetSocket socket) {
@@ -43,6 +63,29 @@ public class TcpServerHandler implements Handler<NetSocket> {
 
             //获取 ProtocolMessage 请求; 请求的消息体为 RpcRequest
             RpcRequest rpcRequest = requestProtocolMessage.getBody();
+
+            // 拦截器拦截
+            if (!INTERCEPTOR_LIST.isEmpty()) {
+                for (RpcHandlerInterceptor interceptor : INTERCEPTOR_LIST) {
+                    try {
+                        if (!interceptor.preHandle(rpcRequest)) {
+                            log.error("RpcHandlerInterceptor preHandle fail");
+                            //编码序列化 - 由 ProtocolMessage 获取 Buffer
+                            ProtocolMessage<RpcResponse> interceptorPreHandleFail =
+                                    getErrorResponse(requestProtocolMessage.getHeader(), new RuntimeException("RpcHandlerInterceptor preHandle fail"));
+                            Buffer buf = ProtocolMessageEncoder.encode(interceptorPreHandleFail);
+                            socket.write(buf);
+                            return;
+                        }
+                    } catch (Exception e) {
+                        ProtocolMessage<RpcResponse> errorResponse = getErrorResponse(requestProtocolMessage.getHeader(), e);
+                        Buffer buf = ProtocolMessageEncoder.encode(errorResponse);
+                        socket.write(buf);
+                        return;
+                    }
+                }
+            }
+
             String serviceName = rpcRequest.getServiceName();   //调用全类名
             String methodName = rpcRequest.getMethodName();     //调用方法名
             Object[] params = rpcRequest.getParams();           //调用实参
@@ -87,5 +130,16 @@ public class TcpServerHandler implements Handler<NetSocket> {
 
         //处理连接
         socket.handler(bufferHandlerWrapper);
+    }
+
+
+    private ProtocolMessage<RpcResponse> getErrorResponse(ProtocolMessage.Header header, Exception e) {
+        RpcResponse rpcResponse = new RpcResponse();
+        rpcResponse.setMsg(ProtocolMessageStateEnum.RESPONSE_FAIL.getText());
+        rpcResponse.setException(e);
+        //基于消费者发送的 ProtocolMessage 获取消息头，复用字段保证: 魔数 + 版本号 一致
+        header.setMessageType(ProtocolMessageTypeEnum.RESPONSE.getMessageType());
+        ProtocolMessage<RpcResponse> responseProtocolMessage = new ProtocolMessage<>(header, rpcResponse);
+        return responseProtocolMessage;
     }
 }
