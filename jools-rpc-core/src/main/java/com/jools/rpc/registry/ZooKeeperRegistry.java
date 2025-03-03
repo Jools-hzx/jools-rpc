@@ -152,7 +152,7 @@ public class ZooKeeperRegistry implements Registry {
         String searchKey = ZK_ROOT_PATH + "/" + serviceKey;
 
         //先查询缓存
-        Map<String, List<ServiceMetaInfo>> serviceCache = this.registryServiceCache.serviceCache;
+        Map<String, List<ServiceMetaInfo>> serviceCache = this.registryServiceCache.serviceCache.asMap();
         if (serviceCache.containsKey(searchKey) && !serviceCache.get(searchKey).isEmpty()) {
             log.info("ServiceKey:{} hit Registry Service Cache, read data from Cache", searchKey);
             return registryServiceCache.readCache(searchKey);

@@ -227,7 +227,7 @@ public class RedisRegistry implements Registry {
         //构建查询的 key 基于 /rpc/serviceName:version
         String searchKey = REDIS_ROOT_HEADER + serviceKey;
         //先查询缓存
-        Map<String, List<ServiceMetaInfo>> serviceCache = registryServiceCache.serviceCache;
+        Map<String, List<ServiceMetaInfo>> serviceCache = registryServiceCache.serviceCache.asMap();
         if (serviceCache.containsKey(searchKey) && !serviceCache.get(searchKey).isEmpty()) {
             log.info("ServiceKey:{} hit Registry Service Cache, read data from Cache", searchKey);
             return registryServiceCache.readCache(searchKey);

@@ -5,6 +5,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.cron.CronUtil;
 import cn.hutool.cron.task.Task;
 import cn.hutool.json.JSONUtil;
+import com.github.benmanes.caffeine.cache.Cache;
 import com.jools.rpc.RpcApplication;
 import com.jools.rpc.config.RegistryConfig;
 import com.jools.rpc.config.RpcConfig;
@@ -26,6 +27,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
@@ -273,8 +275,8 @@ public class EtcdRegistry implements Registry {
 
         String searchKey = ETCD_ROOT_PATH + serviceKey;
         //先查询缓存
-        Map<String, List<ServiceMetaInfo>> serviceCache = this.registryServiceCache.serviceCache;
-        if (serviceCache.containsKey(searchKey) && serviceCache.get(searchKey).size() != 0) {
+        Map<String, List<ServiceMetaInfo>> serviceCache = this.registryServiceCache.serviceCache.asMap();
+        if (serviceCache.size() != 0 && serviceCache.containsKey(searchKey)) {
             log.info("ServiceKey:{} hit Registry Service Cache, read data from Cache", searchKey);
             return registryServiceCache.readCache(searchKey);
         }

@@ -1,12 +1,15 @@
 package com.jools.rpc.registry;
 
 import cn.hutool.core.util.StrUtil;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.jools.rpc.model.ServiceMetaInfo;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Jools He
@@ -20,7 +23,10 @@ public class RegistryServiceCache {
     /**
      * 本地服务缓存，支持基于(serviceKey)多服务注册
      */
-    Map<String, List<ServiceMetaInfo>> serviceCache = new ConcurrentHashMap<>();
+    Cache<String, List<ServiceMetaInfo>> serviceCache = Caffeine.newBuilder().
+            expireAfterAccess(1, TimeUnit.MINUTES).
+            maximumSize(100).
+            build();
 
     /**
      * 写缓存
@@ -41,11 +47,11 @@ public class RegistryServiceCache {
      * @param serviceKey 服务键名 (serviceName:serviceVersion)
      */
     List<ServiceMetaInfo> readCache(String serviceKey) {
-        if (this.serviceCache.isEmpty()) {
+        if (this.serviceCache.estimatedSize() == 0l) {
             throw new RuntimeException("Current local service cache `RegistryServiceCache` is Empty!");
         }
         try {
-            return serviceCache.get(serviceKey);
+            return serviceCache.getIfPresent(serviceKey);
         } catch (Exception e) {
             throw new RuntimeException("Not register services contains service key:" + serviceKey);
         }
@@ -59,10 +65,10 @@ public class RegistryServiceCache {
     public void clear(String serviceKey) {
         try {
             //防止空缓存
-            if (!this.serviceCache.containsKey(serviceKey)) {
+            if (!(this.serviceCache.estimatedSize() == 0l)) {
                 return;
             }
-            List<ServiceMetaInfo> serviceMetaInfos = this.serviceCache.get(serviceKey);
+            List<ServiceMetaInfo> serviceMetaInfos = this.serviceCache.getIfPresent(serviceKey);
             serviceMetaInfos.clear();
             log.info("ServiceKey:{} local registered services list is clear", serviceKey);
         } catch (Exception e) {
