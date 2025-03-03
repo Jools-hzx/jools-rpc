@@ -98,13 +98,13 @@ public class ServiceMetaInfo {
     }
 
     /**
-     * 获取服务注册键名 + 服务当前版本
+     * 获取: 服务分组/服务注册键名:服务版本
      * 1
      *
      * @return
      */
     public String getServiceKey() {
-        return String.format("%s:%s", serviceName, serviceVersion);
+        return String.format("%s/%s:%s", serviceGroup, serviceName, serviceVersion);
     }
 
     /**

@@ -20,6 +20,8 @@ import com.jools.rpc.loadbalancer.LoadBalancer;
 import com.jools.rpc.model.RpcRequest;
 import com.jools.rpc.model.RpcResponse;
 import com.jools.rpc.model.ServiceMetaInfo;
+import com.jools.rpc.model.ServiceMetaInfoConstant;
+import com.jools.rpc.proxy.annotation.Group;
 import com.jools.rpc.proxy.sender.RequestSender;
 import com.jools.rpc.proxy.sender.RequestSenderFactory;
 import com.jools.rpc.proxy.cache.ConsumerServiceCache;
@@ -116,6 +118,13 @@ public class ServiceProxy implements InvocationHandler {
             ServiceMetaInfo serviceMetaInfo = new ServiceMetaInfo();
             serviceMetaInfo.setServiceName(serviceName);
             serviceMetaInfo.setServiceVersion(rpcConfig.getVersion());
+            //获取服务分组信息
+            if (method.isAnnotationPresent(Group.class)) {
+                Group group = method.getAnnotation(Group.class);
+                String groupName = group.value();
+                groupName = StrUtil.isBlank(groupName) ? ServiceMetaInfoConstant.DEFAULT_SERVICE_GROUP : groupName;
+                serviceMetaInfo.setServiceGroup(groupName);
+            }
             log.debug("Consumer request RPC service name:{}", serviceName);
 
             //基于 ServiceMetaInfo 内的 ServiceKey 查询所有服务节点
