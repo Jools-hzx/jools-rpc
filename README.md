@@ -8,32 +8,39 @@
 ![Static Badge](https://img.shields.io/badge/Maven-3.8.1-C71A36?logo=apachemaven)
 ![Static Badge](https://img.shields.io/badge/Vert.x-4.3.3-green?logo=eclipsevert.x)
 ![Static Badge](https://img.shields.io/badge/Hutool-v5.8.10-blueviolet?logo=hu)
-![Static Badge](https://img.shields.io/badge/Guava-32.1.2-jellow?logo=google) 
+![Static Badge](https://img.shields.io/badge/javafaker-32.1.2-jellow?logo=GitHub) 
 ![Static Badge](https://img.shields.io/badge/Redis-blue?logo=redis) 
-![Static Badge](https://img.shields.io/badge/ZooKeeper-gream?logo=apachezookeeper) 
+![Static Badge](https://img.shields.io/badge/ZooKeeper-5.1.0-green?logo=apache) 
+![Static Badge](https://img.shields.io/badge/Caffeine-3.1.8-brown?logo=apache) 
+![Static Badge](https://img.shields.io/badge/Guava-3.1.8-purple?logo=google) 
+![Static Badge](https://img.shields.io/badge/kryo-5.6.0-yellow?logo=apache) 
+![Static Badge](https://img.shields.io/badge/hessian-4.0.66-grey?logo=apache) 
+![Static Badge](https://img.shields.io/badge/jackson-3.1.8-blue?logo=apache) 
 
 ## Introduction
 `JoolsRPC` is a lightweight RPC (Remote Procedure Call) framework implemented in Java, designed to simplify the process of remote service invocation. It provides an easy-to-use structure with a focus on flexibility, extensibility, and simplicity. This framework is ideal for learning purposes or for small-scale applications requiring lightweight RPC capabilities.
 
 ## ✨ Features
-- 🚀 Asynchronous Communication: Built with Vert.x for high-performance, non-blocking TCP communication, supporting serialization, transmission, and service registration.
-- 🔗 Transparent Service Invocation: Uses JDK dynamic proxies to enable seamless remote method calls, hiding communication details and simplifying development with annotation-driven mechanisms.
-- 📦 Customizable Serialization: Supports JDK, JSON, Kryo, Hessian, and Protobuf, with dynamic loading and flexible SPI-based extension for user-defined serialization methods.
-- 🗂️ Multi-Backend Registry: Supports Redis, Etcd, and ZooKeeper as service registries, with real-time updates, caching, and easy adapter switching via configuration.
-- ⚡ Custom RPC Protocol: Inspired by Dubbo, implements efficient metadata transmission with custom headers and optional GZIP/Snappy compression to optimize bandwidth.
-- ⚖️ Advanced Load Balancing: Offers strategies like round-robin, random, consistent hashing, and least connections, and allows custom extensions via SPI.
-- 🔄 Retry Strategies: Implements fixed interval, incremental wait, exponential backoff, and advanced fault-tolerance policies like FailSafe, FailFast, FailOver, and FailBack.
-- ⚙️ TCP Stability: Solves half-packet and sticky-packet issues using a decorator pattern for reliable and maintainable communication.
-- 🎭 Mock Service: Generates mock service proxies for testing, allowing simulated responses with predefined or random data.
-- 🔍 Real-Time Service Discovery: Leverages Etcd's Watch mechanism for real-time node updates, minimizing polling overhead and improving response speed.
-- 🧩 Plugin Architecture: Enables easy extension of serialization, load balancing, and protocol handlers with a modular plugin system.
-- ✨ Annotation-Driven Development: Simplifies service registration and remote proxy injection via annotations, supporting fallback and mock services.
-- 🔧 Dynamic Registry Switching: Allows seamless switching between Etcd, Redis, and ZooKeeper registries without code changes.
-- 🔒 Enhanced Fault Tolerance: Provides robust retry and failover mechanisms to ensure high availability, with local pseudo-service fallback for graceful degradation.
--🛡️ Two-Way Interceptors: Implements  interceptor chains, configurable via SPI with priority control.
--📌 Version-Driven Routing: Services can declare version numbers via ServiceMetaInfo 'serviceVersion' field, enabling consumers to precisely target specific implementations using semantic version matching.
-- 🔐 Secure Request Context: RPC requests now carry extensible parameter lists, supporting to verify whether this RpcRequest sender had login. Support to set 'AutoLogin' via RpcConifg or SDK settings.
-- ⏱️ Intelligent Timeout Escalation: Support to use default constant in 'RpcConstant'. User can reset Timeout duration by RpcConfig or SDK settings.
+- 🚀 **Asynchronous Communication:** Built with Vert.x for high-performance, non-blocking TCP communication, supporting serialization, transmission, and service registration.
+- 🔗 **Transparent Service Invocation:** Uses JDK dynamic proxies to enable seamless remote method calls, hiding communication details and simplifying development with annotation-driven mechanisms.
+- 📦 **Customizable Serialization:** Supports JDK, JSON, Kryo, Hessian, and Protobuf, with dynamic loading and flexible SPI-based extension for user-defined serialization methods.
+- 🗂️ **Multi-Backend Registry:** Supports Redis, Etcd, and ZooKeeper as service registries, with real-time updates, caching, and easy adapter switching via configuration.
+- ⚡ **Custom RPC Protocol:** Inspired by Dubbo, implements efficient metadata transmission with custom headers and optional GZIP/Snappy compression to optimize bandwidth.
+- ⚖️ **Advanced Load Balancing:** Offers strategies like round-robin, random, consistent hashing, and least connections, and allows custom extensions via SPI.
+- 🔄 **Retry Strategies:** Implements fixed interval, incremental wait, exponential backoff, and advanced fault-tolerance policies like FailSafe, FailFast, FailOver, and FailBack.
+- ⚙️ **TCP Stability:** Solves half-packet and sticky-packet issues using a decorator pattern for reliable and maintainable communication.
+- 🎭 **Mock Service:** Generates mock service proxies for testing, allowing simulated responses with predefined or random data.
+- 🔍 **Real-Time Service Discovery:** Leverages Etcd's Watch mechanism for real-time node updates, minimizing polling overhead and improving response speed.
+- 🧩 **Plugin Architecture:** Enables easy extension of serialization, load balancing, and protocol handlers with a modular plugin system.
+- ✨ **Annotation-Driven Development:** Simplifies service registration and remote proxy injection via annotations, supporting fallback and mock services.
+- 🔧 **Dynamic Registry Switching:** Allows seamless switching between Etcd, Redis, and ZooKeeper registries without code changes.
+- 🔒 **Enhanced Fault Tolerance:** Provides robust retry and failover mechanisms to ensure high availability, with local pseudo-service fallback for graceful degradation.
+- 🛡️ **Two-Way Interceptors:** Implements  interceptor chains, configurable via SPI with priority control.
+- 📌 **Version-Driven Routing:** Services can declare version numbers via ServiceMetaInfo 'serviceVersion' field, enabling consumers to precisely target specific implementations using semantic version matching.
+- 🔐 **Secure Request Context:** RPC requests now carry extensible parameter lists, supporting to verify whether this RpcRequest sender had login. Support to set 'AutoLogin' via RpcConifg or SDK settings.
+- ⏱️ **Intelligent Timeout Escalation:** Support to use default constant in 'RpcConstant'. User can reset Timeout duration by RpcConfig or SDK settings.
+- 🎲 **Service Level Configurable Strategy:** Design Method Level Annotation to control ErrorTolerant, LoadBalance, Retry Strategy
+- 📑 **Support for specified service groups:** service providers can select service groups, and service consumers can use services in specified groups
 
 
 ## 📂 Project Structure
