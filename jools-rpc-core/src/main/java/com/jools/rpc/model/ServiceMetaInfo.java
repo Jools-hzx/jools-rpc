@@ -1,6 +1,7 @@
 package com.jools.rpc.model;
 
 import cn.hutool.core.util.StrUtil;
+import com.jools.rpc.RpcApplication;
 import com.jools.rpc.model.registryInfo.Protocol;
 import com.jools.rpc.model.registryInfo.ServiceWeight;
 import lombok.AllArgsConstructor;
@@ -61,6 +62,21 @@ public class ServiceMetaInfo {
      * 通信协议，默认 HTTP
      */
     private String protocol = Protocol.HTTP;
+
+    /**
+     * 容错
+     */
+    private String errorTolerant = RpcApplication.getRpcConfig().getErrorTolerantStrategyKeys();
+
+    /**
+     * 负载均衡
+     */
+    private String loadBalance = RpcApplication.getRpcConfig().getLoadBalance();
+
+    /**
+     * 重试
+     */
+    private String retry = RpcApplication.getRpcConfig().getRetryStrategyKey();
 
     /**
      * 服务权重，默认 0

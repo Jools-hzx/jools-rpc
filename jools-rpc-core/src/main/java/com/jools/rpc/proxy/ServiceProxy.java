@@ -17,11 +17,15 @@ import com.jools.rpc.fault.tolerant.ErrorTolerantStrategy;
 import com.jools.rpc.fault.tolerant.ErrorTolerantStrategyFactory;
 import com.jools.rpc.loadbalancer.LoadBalanceFactory;
 import com.jools.rpc.loadbalancer.LoadBalancer;
+import com.jools.rpc.loadbalancer.LoadBalancerKeys;
 import com.jools.rpc.model.RpcRequest;
 import com.jools.rpc.model.RpcResponse;
 import com.jools.rpc.model.ServiceMetaInfo;
 import com.jools.rpc.model.ServiceMetaInfoConstant;
+import com.jools.rpc.proxy.annotation.ErrorTolerant;
 import com.jools.rpc.proxy.annotation.Group;
+import com.jools.rpc.proxy.annotation.LoadBalance;
+import com.jools.rpc.proxy.annotation.Retry;
 import com.jools.rpc.proxy.sender.RequestSender;
 import com.jools.rpc.proxy.sender.RequestSenderFactory;
 import com.jools.rpc.proxy.cache.ConsumerServiceCache;
@@ -125,6 +129,35 @@ public class ServiceProxy implements InvocationHandler {
                 groupName = StrUtil.isBlank(groupName) ? ServiceMetaInfoConstant.DEFAULT_SERVICE_GROUP : groupName;
                 serviceMetaInfo.setServiceGroup(groupName);
             }
+
+            // 获取设置的容错策略
+            if (method.isAnnotationPresent(ErrorTolerant.class)) {
+                ErrorTolerant errorTolerant = method.getAnnotation(ErrorTolerant.class);
+                String errorTolerantKeys = errorTolerant.strategy();
+                if (StrUtil.isNotBlank(errorTolerantKeys)) {
+                    rpcConfig.setErrorTolerantStrategyKeys(errorTolerantKeys);
+                }
+            }
+
+            // 获取设置的负载均衡策略
+            if (method.isAnnotationPresent(LoadBalance.class)) {
+                LoadBalance loadBalance = method.getAnnotation(LoadBalance.class);
+                String loadBalanceKeys = loadBalance.strategy();
+                if (StrUtil.isNotBlank(loadBalanceKeys)) {
+                    serviceMetaInfo.setLoadBalance(loadBalanceKeys);
+                }
+            }
+
+            // 设置重试策略
+            if (method.isAnnotationPresent(Retry.class)) {
+                Retry retry = method.getAnnotation(Retry.class);
+                String retryStrategyKeys = retry.strategy();
+                if (StrUtil.isNotBlank(retryStrategyKeys)) {
+                    serviceMetaInfo.setRetry(retryStrategyKeys);
+                }
+            }
+
+            // 获取设置的重试策略
             log.debug("Consumer request RPC service name:{}", serviceName);
 
             //基于 ServiceMetaInfo 内的 ServiceKey 查询所有服务节点
@@ -140,7 +173,8 @@ public class ServiceProxy implements InvocationHandler {
             selectedServiceMetaInfo = readServiceMetaInfo(
                     serviceMetaInfos,
                     serviceMetaInfo.getServiceName(),
-                    requestParams);
+                    requestParams,
+                    serviceMetaInfo.getLoadBalance());
             log.info("Selected ServiceMetaInfo{}", JSONUtil.formatJsonStr(selectedServiceMetaInfo.toString()));
 
             //无注册信息 & 无合法缓存节点信息
@@ -166,7 +200,7 @@ public class ServiceProxy implements InvocationHandler {
             RequestSender sender = RequestSenderFactory.getSender(protocol);
 
             //重试机制
-            RetryStrategy retryStrategy = RetryStrategyFactory.getRetryStrategy(RpcApplication.getRpcConfig().getRetryStrategyKey());
+            RetryStrategy retryStrategy = RetryStrategyFactory.getRetryStrategy(selectedServiceMetaInfo.getRetry());
 
             //lambda 表达式封装成 Callable
             try {
@@ -174,7 +208,7 @@ public class ServiceProxy implements InvocationHandler {
                     return sender.convertAndSend(selectedServiceMetaInfo.getServiceAddr(), rpcRequest);
                 });
             } catch (Exception e) {
-                String tolerantStrategyKeys = RpcApplication.getRpcConfig().getErrorTolerantStrategyKeys();
+                String tolerantStrategyKeys = selectedServiceMetaInfo.getErrorTolerant();
                 ErrorTolerantStrategy tolerantStrategy = ErrorTolerantStrategyFactory.getTolerantStrategy(tolerantStrategyKeys);
                 Map<String, Object> respContext = null;
                 //Fail Back 策略
@@ -224,17 +258,20 @@ public class ServiceProxy implements InvocationHandler {
      *
      * @param serviceMetaInfos 注册服务信息
      * @param serviceName      注册服务名
+     * @param reqParams        请求参数
+     * @param loadBalancerKeys 负载均衡算法
      * @return
      */
     private ServiceMetaInfo readServiceMetaInfo(List<ServiceMetaInfo> serviceMetaInfos,
                                                 String serviceName,
-                                                Map<String, Object> reqParams) {
+                                                Map<String, Object> reqParams,
+                                                String loadBalancerKeys) {
         if (ObjectUtil.isNotEmpty(serviceMetaInfos)) {
             // 缓存服务信息
             consumerServiceCache.writeCache(serviceName, serviceMetaInfos);
             log.info("Updated service info list to cache, serviceKey: {}", serviceName);
             // 优化 - 基于负载均衡算法选取
-            LoadBalancer loadBalancer = LoadBalanceFactory.getInstance(RpcApplication.getRpcConfig().getLoadBalance());
+            LoadBalancer loadBalancer = LoadBalanceFactory.getInstance(loadBalancerKeys);
             log.info("Using loadBalance, rule:{}", loadBalancer.getClass().getSimpleName());
             return loadBalancer.selectService(reqParams, serviceMetaInfos);
         }
