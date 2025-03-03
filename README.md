@@ -30,7 +30,10 @@
 - ✨ Annotation-Driven Development: Simplifies service registration and remote proxy injection via annotations, supporting fallback and mock services.
 - 🔧 Dynamic Registry Switching: Allows seamless switching between Etcd, Redis, and ZooKeeper registries without code changes.
 - 🔒 Enhanced Fault Tolerance: Provides robust retry and failover mechanisms to ensure high availability, with local pseudo-service fallback for graceful degradation.
-
+-🛡️ Two-Way Interceptors: Implements  interceptor chains, configurable via SPI with priority control.
+-📌 Version-Driven Routing: Services can declare version numbers via ServiceMetaInfo 'serviceVersion' field, enabling consumers to precisely target specific implementations using semantic version matching.
+- 🔐 Secure Request Context: RPC requests now carry extensible parameter lists, supporting to verify whether this RpcRequest sender had login. Support to set 'AutoLogin' via RpcConifg or SDK settings.
+- ⏱️ Intelligent Timeout Escalation: Support to use default constant in 'RpcConstant'. User can reset Timeout duration by RpcConfig or SDK settings.
 
 
 ## 📂 Project Structure
